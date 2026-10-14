@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/* Спокійна нейтральна палітра; один акцентний колір і приглушені статуси. */
+:root {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --surface-muted: #f1f1ee;
+  --border: #e4e4df;
+  --text: #1f2328;
+  --text-muted: #6b6f76;
+  --accent: #3b5bdb;
+  --accent-soft: #e8edff;
+  --danger: #c2410c;
+  --danger-soft: #fff1e8;
+  --warn: #a16207;
+  --warn-soft: #fdf6e3;
+  --ok: #15803d;
+  --ok-soft: #eaf6ee;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141517;
+    --surface: #1c1d20;
+    --surface-muted: #24262a;
+    --border: #2f3136;
+    --text: #e6e6e3;
+    --text-muted: #9a9ca1;
+    --accent: #8ea4ff;
+    --accent-soft: #232a45;
+    --danger: #fb923c;
+    --danger-soft: #3a2418;
+    --warn: #facc15;
+    --warn-soft: #34301a;
+    --ok: #4ade80;
+    --ok-soft: #1a3324;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+@layer components {
+  .input {
+    @apply w-full rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20;
+  }
+  .label {
+    @apply mb-1 block text-sm font-medium;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors disabled:opacity-50 bg-accent text-white hover:opacity-90 dark:text-black;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors disabled:opacity-50 border border-border bg-surface hover:bg-surface-muted;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors disabled:opacity-50 border border-border bg-surface text-danger hover:bg-danger-soft;
+  }
+  .card {
+    @apply rounded-lg border border-border bg-surface;
+  }
+}
