@@ -1,16 +1,12 @@
 import { HubError, runHubCommand } from "@/lib/hub";
+import { passwordMatches } from "@/lib/session";
 
 // Вхід для CLI (scripts/hub.ts) з місць, де немає прямого доступу до бази.
-// Захищено окремим токеном HUB_TOKEN, а не сесією браузера.
+// Захищено тим самим паролем APP_PASSWORD, що й сайт (заголовок Authorization: Bearer).
 
-function tokenMatches(header: string | null): boolean {
-  const expected = process.env.HUB_TOKEN;
-  if (!expected || expected.length < 32 || !header?.startsWith("Bearer ")) return false;
-  const given = header.slice("Bearer ".length);
-  if (given.length !== expected.length) return false;
-  let diff = 0;
-  for (let i = 0; i < given.length; i++) diff |= given.charCodeAt(i) ^ expected.charCodeAt(i);
-  return diff === 0;
+async function authorized(header: string | null): Promise<boolean> {
+  if (!header?.startsWith("Bearer ")) return false;
+  return passwordMatches(header.slice("Bearer ".length));
 }
 
 const bodySchema = (body: unknown): body is { argv: string[]; stdin?: string } =>
@@ -21,7 +17,7 @@ const bodySchema = (body: unknown): body is { argv: string[]; stdin?: string } =
   ["undefined", "string"].includes(typeof (body as { stdin?: unknown }).stdin);
 
 export async function POST(request: Request) {
-  if (!tokenMatches(request.headers.get("authorization"))) {
+  if (!(await authorized(request.headers.get("authorization")))) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
   const body = await request.json().catch(() => null);

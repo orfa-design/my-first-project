@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 //
 // Два режими:
 //  • DATABASE_URL задано → команди виконуються напряму в базі (локальна розробка);
-//  • інакше HUB_URL + HUB_TOKEN → команди йдуть на розгорнутий застосунок через POST /api/hub
+//  • інакше HUB_URL + APP_PASSWORD → команди йдуть на розгорнутий застосунок через POST /api/hub
 //    (у хмарних сесіях Claude Code прямого з'єднання з Postgres немає, лише HTTPS).
 
 async function main(): Promise<number> {
@@ -31,9 +31,9 @@ async function main(): Promise<number> {
   }
 
   const url = process.env.HUB_URL;
-  const token = process.env.HUB_TOKEN;
+  const token = process.env.APP_PASSWORD;
   if (!url || !token) {
-    console.error("Задайте DATABASE_URL (напряму) або HUB_URL і HUB_TOKEN (через застосунок). Див. README.");
+    console.error("Задайте DATABASE_URL (напряму) або HUB_URL і APP_PASSWORD (через застосунок). Див. README.");
     return 1;
   }
   const res = await fetch(new URL("/api/hub", url), {

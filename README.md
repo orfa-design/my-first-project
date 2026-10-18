@@ -25,10 +25,7 @@
    | Змінна | Значення |
    | --- | --- |
    | `DATABASE_URL` | рядок із Supabase |
-   | `APP_PASSWORD` | пароль для входу на сайт |
-   | `HUB_TOKEN` | випадковий рядок ≥ 32 символів (для AI) |
-
-   Випадковий рядок: `openssl rand -hex 32`.
+   | `APP_PASSWORD` | пароль для входу на сайт (ним же користується AI) |
 3. **Deploy.** Адреса сайту буде на кшталт `https://study-hub-xxx.vercel.app`.
 
 ### 3. Таблиці в базі
@@ -49,7 +46,7 @@ DATABASE_URL='рядок із Supabase' npm run db:migrate
 через сайт:
 
 1. У налаштуваннях середовища Claude Code (меню середовища в заголовку сесії → **Edit**):
-   - **Environment variables:** `HUB_URL=https://<ваш-сайт>.vercel.app` і `HUB_TOKEN=<те саме, що у Vercel>`;
+   - **Environment variables:** `HUB_URL=https://<ваш-сайт>.vercel.app` і `APP_PASSWORD=<те саме, що у Vercel>`;
    - **Network access:** додайте домен сайту (`<ваш-сайт>.vercel.app`) до дозволених.
 2. Нова сесія підхопить налаштування. Перевірка: `npm run hub -- summary`.
 
