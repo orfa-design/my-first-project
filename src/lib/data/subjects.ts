@@ -10,15 +10,15 @@ export async function listSubjects(semesterId?: string | null): Promise<SubjectW
     select s.*,
       count(t.id) filter (where t.status in ('not_started', 'in_progress', 'needs_revision'))::int as open_tasks,
       count(t.id)::int as total_tasks
-    from subjects s
-    left join tasks t on t.subject_id = s.id
+    from sh_subjects s
+    left join sh_tasks t on t.subject_id = s.id
     ${semesterId ? sql`where s.semester_id = ${semesterId}` : sql``}
     group by s.id
     order by s.name`;
 }
 
 export async function getSubject(id: string): Promise<Subject | null> {
-  const [row] = await db()<Subject[]>`select * from subjects where id = ${id}`;
+  const [row] = await db()<Subject[]>`select * from sh_subjects where id = ${id}`;
   return row ?? null;
 }
 
@@ -26,7 +26,7 @@ export async function getSubject(id: string): Promise<Subject | null> {
 export async function findSimilarSubjects(name: string, limit = 5) {
   return db()<(Subject & { score: number })[]>`
     select *, greatest(similarity(name, ${name}), word_similarity(${name}, name)) as score
-    from subjects
+    from sh_subjects
     where name ilike ${"%" + name + "%"} or similarity(name, ${name}) > 0.2 or word_similarity(${name}, name) > 0.4
     order by score desc
     limit ${limit}`;
@@ -34,17 +34,17 @@ export async function findSimilarSubjects(name: string, limit = 5) {
 
 export async function createSubject(input: SubjectInput): Promise<Subject> {
   const sql = db();
-  const [row] = await sql<Subject[]>`insert into subjects ${sql(input)} returning *`;
+  const [row] = await sql<Subject[]>`insert into sh_subjects ${sql(input)} returning *`;
   return row;
 }
 
 export async function updateSubject(id: string, patch: SubjectPatch): Promise<Subject | null> {
   if (Object.keys(patch).length === 0) return getSubject(id);
   const sql = db();
-  const [row] = await sql<Subject[]>`update subjects set ${sql(patch)} where id = ${id} returning *`;
+  const [row] = await sql<Subject[]>`update sh_subjects set ${sql(patch)} where id = ${id} returning *`;
   return row ?? null;
 }
 
 export async function deleteSubject(id: string): Promise<void> {
-  await db()`delete from subjects where id = ${id}`;
+  await db()`delete from sh_subjects where id = ${id}`;
 }

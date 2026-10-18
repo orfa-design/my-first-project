@@ -55,8 +55,8 @@ export async function listTasks(filter: TaskFilter = {}): Promise<TaskWithSubjec
 
   return sql<TaskWithSubject[]>`
     select t.*, s.name as subject_name
-    from tasks t
-    left join subjects s on s.id = t.subject_id
+    from sh_tasks t
+    left join sh_subjects s on s.id = t.subject_id
     ${whereSql}
     order by t.due_date asc nulls last, t.due_time asc nulls last, t.created_at desc
     ${filter.limit ? sql`limit ${filter.limit}` : sql``}`;
@@ -65,7 +65,7 @@ export async function listTasks(filter: TaskFilter = {}): Promise<TaskWithSubjec
 export async function getTask(id: string): Promise<TaskWithSubject | null> {
   const [row] = await db()<TaskWithSubject[]>`
     select t.*, s.name as subject_name
-    from tasks t left join subjects s on s.id = t.subject_id
+    from sh_tasks t left join sh_subjects s on s.id = t.subject_id
     where t.id = ${id}`;
   return row ?? null;
 }
@@ -76,7 +76,7 @@ export async function findSimilarTasks(title: string, subjectId?: string | null,
   return sql<(TaskWithSubject & { score: number })[]>`
     select t.*, s.name as subject_name,
       greatest(similarity(t.title, ${title}), word_similarity(${title}, t.title)) as score
-    from tasks t left join subjects s on s.id = t.subject_id
+    from sh_tasks t left join sh_subjects s on s.id = t.subject_id
     where (t.title ilike ${"%" + title + "%"} or similarity(t.title, ${title}) > 0.25
            or word_similarity(${title}, t.title) > 0.5)
       ${subjectId ? sql`and t.subject_id = ${subjectId}` : sql``}
@@ -86,17 +86,17 @@ export async function findSimilarTasks(title: string, subjectId?: string | null,
 
 export async function createTask(input: TaskInput): Promise<Task> {
   const sql = db();
-  const [row] = await sql<Task[]>`insert into tasks ${sql(toRow(sql, input))} returning *`;
+  const [row] = await sql<Task[]>`insert into sh_tasks ${sql(toRow(sql, input))} returning *`;
   return row;
 }
 
 export async function updateTask(id: string, patch: TaskPatch): Promise<Task | null> {
   const sql = db();
   if (Object.keys(patch).length === 0) return getTask(id);
-  const [row] = await sql<Task[]>`update tasks set ${sql(toRow(sql, patch))} where id = ${id} returning *`;
+  const [row] = await sql<Task[]>`update sh_tasks set ${sql(toRow(sql, patch))} where id = ${id} returning *`;
   return row ?? null;
 }
 
 export async function deleteTask(id: string): Promise<void> {
-  await db()`delete from tasks where id = ${id}`;
+  await db()`delete from sh_tasks where id = ${id}`;
 }

@@ -34,22 +34,22 @@ export async function getDashboard(): Promise<Dashboard> {
       listTasks({ openOnly: true, due: "upcoming" }),
       listTasks({ statuses: ["submitted"] }),
       sql<TaskWithSubject[]>`
-        select t.*, s.name as subject_name from tasks t left join subjects s on s.id = t.subject_id
+        select t.*, s.name as subject_name from sh_tasks t left join sh_subjects s on s.id = t.subject_id
         where t.needs_review order by t.updated_at desc limit 10`,
       sql<TaskWithSubject[]>`
-        select t.*, s.name as subject_name from tasks t left join subjects s on s.id = t.subject_id
+        select t.*, s.name as subject_name from sh_tasks t left join sh_subjects s on s.id = t.subject_id
         where t.result is not null order by t.updated_at desc limit 5`,
       // Що залишилося до сесії: предмети поточного семестру (або всі, якщо семестр не задано).
       sql<SessionSubject[]>`
         select s.id, s.name, s.control_form, s.admission_requirements,
           count(t.id) filter (where t.status in ('not_started', 'in_progress', 'needs_revision'))::int as open_tasks,
           count(t.id) filter (where t.status = 'submitted')::int as awaiting_grade
-        from subjects s left join tasks t on t.subject_id = s.id
+        from sh_subjects s left join sh_tasks t on t.subject_id = s.id
         ${semester ? sql`where s.semester_id = ${semester.id}` : sql``}
         group by s.id
         order by open_tasks desc, s.name`,
       sql<{ subjects: number; tasks: number }[]>`
-        select (select count(*) from subjects)::int as subjects, (select count(*) from tasks)::int as tasks`,
+        select (select count(*) from sh_subjects)::int as subjects, (select count(*) from sh_tasks)::int as tasks`,
     ]);
 
   // Найближчі дедлайни: два тижні вперед, але щонайменше 5 записів, якщо вони є.

@@ -1,10 +1,11 @@
 -- Етап 1: семестри, предмети, завдання.
+-- Усі об'єкти мають приставку sh_ (Study Hub), щоб не перетинатися з іншими таблицями в базі.
 
 create extension if not exists pg_trgm;
 
 -- Семестр задає межі навчального періоду та дати сесії.
 -- Від них рахується блок «Що залишилося закрити до сесії».
-create table semesters (
+create table sh_semesters (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   starts_on date,
@@ -18,11 +19,11 @@ create table semesters (
 );
 
 -- Поточним може бути лише один семестр.
-create unique index semesters_one_current on semesters (is_current) where is_current;
+create unique index sh_semesters_one_current on sh_semesters (is_current) where is_current;
 
-create table subjects (
+create table sh_subjects (
   id uuid primary key default gen_random_uuid(),
-  semester_id uuid references semesters (id) on delete set null,
+  semester_id uuid references sh_semesters (id) on delete set null,
   name text not null,
   code text,
   teacher_name text,
@@ -38,11 +39,11 @@ create table subjects (
   updated_at timestamptz not null default now()
 );
 
-create index subjects_name_trgm on subjects using gin (name gin_trgm_ops);
+create index sh_subjects_name_trgm on sh_subjects using gin (name gin_trgm_ops);
 
-create table tasks (
+create table sh_tasks (
   id uuid primary key default gen_random_uuid(),
-  subject_id uuid references subjects (id) on delete set null,
+  subject_id uuid references sh_subjects (id) on delete set null,
   title text not null,
   description text,
   -- Дедлайн за київським часом: дата обов'язкова для дедлайну, час — ні.
@@ -65,16 +66,16 @@ create table tasks (
   updated_at timestamptz not null default now()
 );
 
-create index tasks_subject on tasks (subject_id);
-create index tasks_due on tasks (due_date);
-create index tasks_title_trgm on tasks using gin (title gin_trgm_ops);
+create index sh_tasks_subject on sh_tasks (subject_id);
+create index sh_tasks_due on sh_tasks (due_date);
+create index sh_tasks_title_trgm on sh_tasks using gin (title gin_trgm_ops);
 
-create function touch_updated_at() returns trigger language plpgsql as $$
+create function sh_touch_updated_at() returns trigger language plpgsql as $$
 begin
   new.updated_at = now();
   return new;
 end $$;
 
-create trigger semesters_touch before update on semesters for each row execute function touch_updated_at();
-create trigger subjects_touch before update on subjects for each row execute function touch_updated_at();
-create trigger tasks_touch before update on tasks for each row execute function touch_updated_at();
+create trigger sh_semesters_touch before update on sh_semesters for each row execute function sh_touch_updated_at();
+create trigger sh_subjects_touch before update on sh_subjects for each row execute function sh_touch_updated_at();
+create trigger sh_tasks_touch before update on sh_tasks for each row execute function sh_touch_updated_at();
