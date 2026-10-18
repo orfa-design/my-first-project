@@ -79,3 +79,9 @@ end $$;
 create trigger sh_semesters_touch before update on sh_semesters for each row execute function sh_touch_updated_at();
 create trigger sh_subjects_touch before update on sh_subjects for each row execute function sh_touch_updated_at();
 create trigger sh_tasks_touch before update on sh_tasks for each row execute function sh_touch_updated_at();
+
+-- Застосунок ходить у базу напряму від імені власника таблиць, тож RLS його не обмежує.
+-- Увімкнений RLS без політик закриває таблиці від публічного API Supabase (ключі anon/authenticated).
+alter table sh_semesters enable row level security;
+alter table sh_subjects enable row level security;
+alter table sh_tasks enable row level security;

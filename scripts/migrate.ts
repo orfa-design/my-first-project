@@ -10,6 +10,7 @@ async function main() {
     name text primary key,
     applied_at timestamptz not null default now()
   )`;
+  await sql`alter table sh_schema_migrations enable row level security`;
   const applied = new Set((await sql<{ name: string }[]>`select name from sh_schema_migrations`).map((r) => r.name));
 
   const dir = path.join(process.cwd(), "db", "migrations");
