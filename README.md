@@ -26,8 +26,7 @@
    | --- | --- |
    | `DATABASE_URL` | рядок із Supabase |
    | `APP_PASSWORD` | пароль для входу на сайт |
-   | `SESSION_SECRET` | випадковий рядок ≥ 32 символів |
-   | `HUB_TOKEN` | інший випадковий рядок ≥ 32 символів (для AI) |
+   | `HUB_TOKEN` | випадковий рядок ≥ 32 символів (для AI) |
 
    Випадковий рядок: `openssl rand -hex 32`.
 3. **Deploy.** Адреса сайту буде на кшталт `https://study-hub-xxx.vercel.app`.

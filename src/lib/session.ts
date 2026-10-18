@@ -1,4 +1,6 @@
 // Сесія для одного користувача: підписаний HMAC-ом термін дії в cookie.
+// Ключ підпису — APP_PASSWORD, тож окремий секрет не потрібен, а зміна пароля
+// робить недійсними всі видані сесії.
 // Використовує лише Web Crypto, тому працює і в proxy, і в серверних функціях.
 
 export const SESSION_COOKIE = "studyhub_session";
@@ -7,10 +9,8 @@ export const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30 днів
 const encoder = new TextEncoder();
 
 function secret(): string {
-  const value = process.env.SESSION_SECRET;
-  if (!value || value.length < 32) {
-    throw new Error("SESSION_SECRET не задано або він коротший за 32 символи");
-  }
+  const value = process.env.APP_PASSWORD;
+  if (!value) throw new Error("APP_PASSWORD не задано");
   return value;
 }
 
@@ -38,20 +38,19 @@ function timingSafeEqual(a: string, b: string): boolean {
 
 export async function createSessionToken(now = Date.now()): Promise<string> {
   const expires = String(Math.floor(now / 1000) + SESSION_MAX_AGE);
-  return `${expires}.${await hmac(expires)}`;
+  return `${expires}.${await hmac(`session:${expires}`)}`;
 }
 
 export async function verifySessionToken(token: string | undefined, now = Date.now()): Promise<boolean> {
   if (!token) return false;
   const [expires, sig] = token.split(".");
   if (!expires || !sig || Number(expires) * 1000 < now) return false;
-  return timingSafeEqual(sig, await hmac(expires));
+  return timingSafeEqual(sig, await hmac(`session:${expires}`));
 }
 
 /** Порівняння пароля без витоку часу; обидва значення спершу хешуються до однакової довжини. */
 export async function passwordMatches(candidate: string): Promise<boolean> {
-  const expected = process.env.APP_PASSWORD;
-  if (!expected) throw new Error("APP_PASSWORD не задано");
+  const expected = secret();
   const [a, b] = await Promise.all([hmac(`pw:${candidate}`), hmac(`pw:${expected}`)]);
   return timingSafeEqual(a, b);
 }
