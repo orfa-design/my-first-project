@@ -1,4 +1,4 @@
-import type { TaskStatus } from "./schemas";
+import type { ClassKind, TaskStatus } from "./schemas";
 
 export const STATUS_LABELS: Record<TaskStatus, string> = {
   not_started: "Не розпочато",
@@ -16,3 +16,14 @@ export const CONTROL_FORM_LABELS = {
   diff_credit: "Диференційований залік",
   other: "Інше",
 } as const;
+
+export const CLASS_KIND_LABELS: Record<ClassKind, string> = {
+  lecture: "Лекція",
+  practice: "Практичне",
+  lab: "Лабораторна",
+  consultation: "Консультація",
+  exam: "Екзамен",
+  credit: "Залік",
+  diff_credit: "Диф. залік",
+  other: "Інше",
+};

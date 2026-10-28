@@ -6,8 +6,10 @@ import { logout } from "@/app/login/actions";
 
 const LINKS = [
   { href: "/", label: "Огляд" },
+  { href: "/schedule", label: "Розклад" },
   { href: "/tasks", label: "Завдання" },
   { href: "/subjects", label: "Предмети" },
+  { href: "/grades", label: "Оцінки" },
   { href: "/semesters", label: "Семестри" },
 ];
 

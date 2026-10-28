@@ -35,3 +35,9 @@ export function relativeDue(isoDate: string, today = todayKyiv()): string {
   if (diff > 1) return `через ${diff} дн.`;
   return `${-diff} дн. тому`;
 }
+
+/** Понеділок тижня, до якого належить дата. */
+export function mondayOf(isoDate: string): string {
+  const day = new Date(`${isoDate}T00:00:00Z`).getUTCDay(); // 0 — неділя
+  return addDays(isoDate, -((day + 6) % 7));
+}

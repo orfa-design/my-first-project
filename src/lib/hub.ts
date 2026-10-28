@@ -1,4 +1,13 @@
 import { z } from "zod";
+import {
+  createAssessment,
+  deleteAssessment,
+  findSimilarAssessments,
+  getAssessment,
+  listAssessments,
+  updateAssessment,
+} from "./data/assessments";
+import { createClass, deleteClass, findDuplicateClasses, getClass, listClasses, updateClass } from "./data/classes";
 import { getDashboard } from "./data/dashboard";
 import {
   createSemester,
@@ -25,6 +34,11 @@ import {
   type DueFilter,
 } from "./data/tasks";
 import {
+  assessmentInput,
+  assessmentPatch,
+  CLASS_KINDS,
+  classSessionInput,
+  classSessionPatch,
   semesterInput,
   semesterPatch,
   subjectInput,
@@ -32,6 +46,7 @@ import {
   TASK_STATUSES,
   taskInput,
   taskPatch,
+  type ClassKind,
   type TaskStatus,
 } from "./schemas";
 
@@ -48,7 +63,7 @@ const HELP = `Study Hub CLI. Використання: npm run hub -- <кома�
 
   subject list [--semester <id>]
   subject find "<назва>"                  Пошук схожих (перед створенням!)
-  subject get <id>                        Предмет + його завдання
+  subject get <id>                        Предмет + його завдання, заняття й оцінки
   subject create '<json>' [--force]       Поля: name, code, semester_id, teacher_name, teacher_contacts,
                                           control_form (exam|credit|diff_credit|other), grading_rules,
                                           admission_requirements, notes
@@ -64,6 +79,26 @@ const HELP = `Study Hub CLI. Використання: npm run hub -- <кома�
                                           checklist [{text, done}], source_text, source_url, needs_review
   task update <id> '<json>'
   task delete <id>
+
+  class list [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--subject <id>] [--kind a,b] [--active]
+  class get <id>
+  class create '<json>' [--force]         Заняття на конкретну дату. Поля: date (YYYY-MM-DD, обов'язково), subject_id,
+                                          starts_at (HH:MM), ends_at (HH:MM), kind (${CLASS_KINDS.join("|")}),
+                                          teacher_name, location, status (scheduled|cancelled), notes,
+                                          source_text, source_url, needs_review
+  class import '<json-масив>' [--force]   Кілька занять за раз; дублікати (предмет + дата + час) пропускає
+  class update <id> '<json>'              Перенесення — змінити date/starts_at; скасування — status: cancelled
+  class delete <id>
+
+  grade list [--subject <id>]             Журнал оцінювання
+  grade find "<назва>" [--subject <id>]
+  grade get <id>
+  grade create '<json>' [--force]         Поля: title (що оцінювали), subject_id, task_id, class_session_id,
+                                          score, max_score (числа; невідоме не заповнювати), result_text
+                                          («зараховано»), assessed_on (YYYY-MM-DD), teacher_comment,
+                                          source_text, source_url, needs_review
+  grade update <id> '<json>'
+  grade delete <id>
 
   '<json>' можна замінити на "-" і передати JSON через stdin.
   create без --force відмовляє, якщо знайдено схожий запис (код виходу 2).`;
@@ -172,7 +207,12 @@ export async function runHubCommand(argv: string[], stdin?: string): Promise<unk
           return findSimilarSubjects(need(a1, "назву"));
         case "get": {
           const subject = orNotFound(await getSubject(need(a1, "id")), "Предмет");
-          return { ...subject, tasks: await listTasks({ subjectId: subject.id }) };
+          const [tasks, classes, grades] = await Promise.all([
+            listTasks({ subjectId: subject.id }),
+            listClasses({ subjectId: subject.id }),
+            listAssessments({ subjectId: subject.id }),
+          ]);
+          return { ...subject, tasks, classes, grades };
         }
         case "create": {
           const input = validate(subjectInput, readJson(a1, stdin));
@@ -227,6 +267,91 @@ export async function runHubCommand(argv: string[], stdin?: string): Promise<unk
           return orNotFound(await updateTask(need(a1, "id"), validate(taskPatch, readJson(a2, stdin))), "Завдання");
         case "delete":
           await deleteTask(need(a1, "id"));
+          return { deleted: a1 };
+      }
+      break;
+
+    case "class":
+      switch (action) {
+        case "list": {
+          const kinds = flag(flags, "kind")?.split(",") as ClassKind[] | undefined;
+          if (kinds?.some((k) => !CLASS_KINDS.includes(k))) {
+            throw new HubError(`Невідомий вид заняття. Допустимі: ${CLASS_KINDS.join(", ")}`);
+          }
+          return listClasses({
+            subjectId: flag(flags, "subject"),
+            from: flag(flags, "from"),
+            to: flag(flags, "to"),
+            kinds,
+            activeOnly: flags.active === true,
+          });
+        }
+        case "get":
+          return orNotFound(await getClass(need(a1, "id")), "Заняття");
+        case "create": {
+          const input = validate(classSessionInput, readJson(a1, stdin));
+          if (!flags.force) {
+            const duplicates = await findDuplicateClasses(input);
+            if (duplicates.length) {
+              throw new HubError("Таке заняття вже є. Оновіть наявне або повторіть з --force.", 2, duplicates);
+            }
+          }
+          return createClass(input);
+        }
+        case "import": {
+          const items = readJson(a1, stdin);
+          if (!Array.isArray(items)) throw new HubError("Очікувався JSON-масив занять");
+          // Спершу перевіряємо все, щоб помилка в одному записі не лишила імпорт напівзробленим.
+          const inputs = items.map((item, i) => {
+            const result = classSessionInput.safeParse(item);
+            if (!result.success) {
+              throw new HubError(`Помилка валідації в записі #${i}`, 1, z.treeifyError(result.error));
+            }
+            return result.data;
+          });
+          const created = [];
+          const skipped = [];
+          for (const input of inputs) {
+            if (!flags.force && (await findDuplicateClasses(input)).length) {
+              skipped.push(input);
+              continue;
+            }
+            created.push(await createClass(input));
+          }
+          return { created: created.length, skipped: skipped.length, skippedItems: skipped, items: created };
+        }
+        case "update":
+          return orNotFound(await updateClass(need(a1, "id"), validate(classSessionPatch, readJson(a2, stdin))), "Заняття");
+        case "delete":
+          await deleteClass(need(a1, "id"));
+          return { deleted: a1 };
+      }
+      break;
+
+    case "grade":
+      switch (action) {
+        case "list":
+          return listAssessments({ subjectId: flag(flags, "subject") });
+        case "find":
+          return findSimilarAssessments(need(a1, "назву"), flag(flags, "subject"));
+        case "get":
+          return orNotFound(await getAssessment(need(a1, "id")), "Оцінку");
+        case "create": {
+          const input = validate(assessmentInput, readJson(a1, stdin));
+          if (!flags.force) {
+            const similar = (await findSimilarAssessments(input.title, input.subject_id)).filter(
+              (a) => a.score_similarity >= DUPLICATE_SCORE,
+            );
+            if (similar.length) {
+              throw new HubError("Знайдено схожі оцінки. Оновіть наявну або повторіть з --force.", 2, similar);
+            }
+          }
+          return createAssessment(input);
+        }
+        case "update":
+          return orNotFound(await updateAssessment(need(a1, "id"), validate(assessmentPatch, readJson(a2, stdin))), "Оцінку");
+        case "delete":
+          await deleteAssessment(need(a1, "id"));
           return { deleted: a1 };
       }
       break;

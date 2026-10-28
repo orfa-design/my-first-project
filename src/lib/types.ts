@@ -1,4 +1,4 @@
-import type { ChecklistItem, TaskStatus } from "./schemas";
+import type { ChecklistItem, ClassKind, ClassStatus, TaskStatus } from "./schemas";
 
 export type Semester = {
   id: string;
@@ -49,3 +49,44 @@ export type Task = {
 
 /** Завдання разом із назвою предмета — для списків. */
 export type TaskWithSubject = Task & { subject_name: string | null };
+
+export type ClassSession = {
+  id: string;
+  subject_id: string | null;
+  date: string;
+  starts_at: string | null;
+  ends_at: string | null;
+  kind: ClassKind;
+  teacher_name: string | null;
+  location: string | null;
+  status: ClassStatus;
+  notes: string | null;
+  source_text: string | null;
+  source_url: string | null;
+  needs_review: boolean;
+  created_at: Date;
+  updated_at: Date;
+};
+
+export type ClassSessionWithSubject = ClassSession & { subject_name: string | null };
+
+export type Assessment = {
+  id: string;
+  subject_id: string | null;
+  task_id: string | null;
+  class_session_id: string | null;
+  title: string;
+  /** numeric повертається рядком, щоб не втратити точність. */
+  score: string | null;
+  max_score: string | null;
+  result_text: string | null;
+  assessed_on: string | null;
+  teacher_comment: string | null;
+  source_text: string | null;
+  source_url: string | null;
+  needs_review: boolean;
+  created_at: Date;
+  updated_at: Date;
+};
+
+export type AssessmentWithSubject = Assessment & { subject_name: string | null };
