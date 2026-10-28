@@ -34,6 +34,10 @@ export const TASK_STATUSES = ["not_started", "in_progress", "submitted", "comple
 export const OPEN_TASK_STATUSES = ["not_started", "in_progress", "needs_revision"] as const;
 export const PRIORITIES = ["low", "normal", "high"] as const;
 export const CONTROL_FORMS = ["exam", "credit", "diff_credit", "other"] as const;
+export const CLASS_KINDS = ["lecture", "practice", "lab", "consultation", "exam", "credit", "diff_credit", "other"] as const;
+/** Види занять, що є підсумковим контролем (екзамен, залік). */
+export const CONTROL_KINDS = ["exam", "credit", "diff_credit"] as const;
+export const CLASS_STATUSES = ["scheduled", "cancelled"] as const;
 
 const emptyToNull = <T extends z.ZodType>(schema: T) =>
   z.preprocess((v) => (v === "" ? null : v), schema.nullish());
@@ -89,7 +93,56 @@ export const taskInput = taskFields.extend({
   needs_review: taskFields.shape.needs_review.default(false),
 });
 
+const requiredDate = z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, "Дата має бути у форматі РРРР-ММ-ДД");
+
+const optionalNumber = z.preprocess(
+  (v) => (v === "" ? null : typeof v === "string" ? Number(v.replace(",", ".")) : v),
+  z.number({ error: "Має бути число" }).finite().nullish(),
+);
+
+const classSessionFields = z.object({
+  subject_id: optionalId,
+  date: requiredDate,
+  starts_at: time,
+  ends_at: time,
+  kind: z.enum(CLASS_KINDS),
+  teacher_name: optionalText,
+  location: optionalText,
+  status: z.enum(CLASS_STATUSES),
+  notes: optionalText,
+  source_text: optionalText,
+  source_url: optionalText,
+  needs_review: z.boolean(),
+});
+
+export const classSessionInput = classSessionFields.extend({
+  kind: classSessionFields.shape.kind.default("other"),
+  status: classSessionFields.shape.status.default("scheduled"),
+  needs_review: classSessionFields.shape.needs_review.default(false),
+});
+
+const assessmentFields = z.object({
+  subject_id: optionalId,
+  task_id: optionalId,
+  class_session_id: optionalId,
+  title: z.string().trim().min(1, "Вкажіть, що оцінювали"),
+  score: optionalNumber,
+  max_score: optionalNumber,
+  result_text: optionalText,
+  assessed_on: isoDate,
+  teacher_comment: optionalText,
+  source_text: optionalText,
+  source_url: optionalText,
+  needs_review: z.boolean(),
+});
+
+export const assessmentInput = assessmentFields.extend({
+  needs_review: assessmentFields.shape.needs_review.default(false),
+});
+
 export const taskPatch = taskFields.partial();
+export const classSessionPatch = classSessionFields.partial();
+export const assessmentPatch = assessmentFields.partial();
 export const subjectPatch = subjectInput.partial();
 export const semesterPatch = semesterInput.partial();
 
@@ -100,6 +153,12 @@ export type TaskPatch = z.infer<typeof taskPatch>;
 export type SubjectPatch = z.infer<typeof subjectPatch>;
 export type SemesterPatch = z.infer<typeof semesterPatch>;
 export type TaskStatus = (typeof TASK_STATUSES)[number];
+export type ClassSessionInput = z.infer<typeof classSessionInput>;
+export type ClassSessionPatch = z.infer<typeof classSessionPatch>;
+export type AssessmentInput = z.infer<typeof assessmentInput>;
+export type AssessmentPatch = z.infer<typeof assessmentPatch>;
+export type ClassKind = (typeof CLASS_KINDS)[number];
+export type ClassStatus = (typeof CLASS_STATUSES)[number];
 export type ChecklistItem = z.infer<typeof checklistItem>;
 
 /** Перше повідомлення про помилку валідації — для показу у формі. */

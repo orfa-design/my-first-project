@@ -2,11 +2,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { ClassDays } from "@/components/classes";
 import { ConfirmButton } from "@/components/confirm-button";
+import { GradeList } from "@/components/grades";
 import { Empty, Loading, Prose, Section, TaskList } from "@/components/ui";
+import { listAssessments } from "@/lib/data/assessments";
+import { listClasses } from "@/lib/data/classes";
 import { getSemester } from "@/lib/data/semesters";
 import { getSubject } from "@/lib/data/subjects";
 import { listTasks } from "@/lib/data/tasks";
+import { todayKyiv } from "@/lib/dates";
 import { isUuid } from "@/lib/ids";
 import { CONTROL_FORM_LABELS } from "@/lib/labels";
 import { OPEN_TASK_STATUSES } from "@/lib/schemas";
@@ -26,9 +31,11 @@ async function SubjectDetails({ params }: { params: PageProps<"/subjects/[id]">[
   if (!isUuid(id)) notFound();
   const subject = await getSubject(id);
   if (!subject) notFound();
-  const [tasks, semester] = await Promise.all([
+  const [tasks, semester, classes, grades] = await Promise.all([
     listTasks({ subjectId: id }),
     subject.semester_id ? getSemester(subject.semester_id) : null,
+    listClasses({ subjectId: id, from: todayKyiv() }),
+    listAssessments({ subjectId: id }),
   ]);
 
   const isOpen = (s: string) => (OPEN_TASK_STATUSES as readonly string[]).includes(s);
@@ -87,6 +94,18 @@ async function SubjectDetails({ params }: { params: PageProps<"/subjects/[id]">[
       )}
 
       <Section
+        title="Найближчі заняття"
+        count={classes.length}
+        action={<Link href={`/schedule/new?subject=${id}`} className="text-sm text-accent">+ заняття</Link>}
+      >
+        {classes.length ? (
+          <ClassDays classes={classes} showSubject={false} />
+        ) : (
+          <Empty>Запланованих занять немає.</Empty>
+        )}
+      </Section>
+
+      <Section
         title="Потрібно зробити"
         count={open.length}
         action={<Link href={`/tasks/new?subject=${id}`} className="text-sm text-accent">+ завдання</Link>}
@@ -105,6 +124,14 @@ async function SubjectDetails({ params }: { params: PageProps<"/subjects/[id]">[
           <TaskList tasks={completed} showSubject={false} />
         </Section>
       )}
+
+      <Section
+        title="Оцінки"
+        count={grades.length}
+        action={<Link href={`/grades/new?subject=${id}`} className="text-sm text-accent">+ оцінка</Link>}
+      >
+        {grades.length ? <GradeList grades={grades} showSubject={false} /> : <Empty>Оцінок ще немає.</Empty>}
+      </Section>
 
       {subject.notes && (
         <Section title="Нотатки">
