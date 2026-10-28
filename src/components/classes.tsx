@@ -22,13 +22,22 @@ export function timeRange(c: Pick<ClassSessionWithSubject, "starts_at" | "ends_a
 }
 
 /** Заняття, згруповані за днями. */
-export function ClassDays({ classes, showSubject = true }: { classes: ClassSessionWithSubject[]; showSubject?: boolean }) {
+export function ClassDays({
+  classes,
+  showSubject = true,
+  currentId,
+}: {
+  classes: ClassSessionWithSubject[];
+  showSubject?: boolean;
+  /** Заняття, яке зараз відкрите, — підсвічується. */
+  currentId?: string;
+}) {
   const days = new Map<string, ClassSessionWithSubject[]>();
   for (const c of classes) days.set(c.date, [...(days.get(c.date) ?? []), c]);
   return (
     <div className="space-y-4">
       {[...days].map(([date, items]) => (
-        <ClassDay key={date} date={date} classes={items} showSubject={showSubject} />
+        <ClassDay key={date} date={date} classes={items} showSubject={showSubject} currentId={currentId} />
       ))}
     </div>
   );
@@ -38,10 +47,12 @@ export function ClassDay({
   date,
   classes,
   showSubject = true,
+  currentId,
 }: {
   date: string;
   classes: ClassSessionWithSubject[];
   showSubject?: boolean;
+  currentId?: string;
 }) {
   const isToday = date === todayKyiv();
   return (
@@ -53,7 +64,7 @@ export function ClassDay({
       {classes.length ? (
         <ul className="divide-y divide-border">
           {classes.map((c) => (
-            <ClassRow key={c.id} c={c} showSubject={showSubject} />
+            <ClassRow key={c.id} c={c} showSubject={showSubject} current={c.id === currentId} />
           ))}
         </ul>
       ) : (
@@ -67,14 +78,15 @@ export function ClassDay({
  * Одна пара — один рядок на широкому екрані: час | предмет | вид і викладач.
  * На смартфоні вид і викладач переходять під назву предмета.
  */
-function ClassRow({ c, showSubject }: { c: ClassSessionWithSubject; showSubject: boolean }) {
+function ClassRow({ c, showSubject, current }: { c: ClassSessionWithSubject; showSubject: boolean; current: boolean }) {
   const cancelled = c.status === "cancelled";
   const struck = cancelled ? "text-muted line-through" : "";
   return (
     <li>
       <Link
         href={`/schedule/${c.id}`}
-        className="grid grid-cols-[5.75rem_1fr] items-baseline gap-x-3 gap-y-1 px-4 py-2.5 text-sm hover:bg-surface-muted md:grid-cols-[6.5rem_1fr_auto] md:gap-x-4"
+        aria-current={current ? "page" : undefined}
+        className={`${current ? "bg-accent-soft" : "hover:bg-surface-muted"} grid grid-cols-[5.75rem_1fr] items-baseline gap-x-3 gap-y-1 px-4 py-2.5 text-sm md:grid-cols-[6.5rem_1fr_auto] md:gap-x-4`}
       >
         <span className={`tabular-nums ${struck}`}>{timeRange(c) || <span className="text-muted">час ?</span>}</span>
         <span className={`font-medium ${struck}`}>
