@@ -23,6 +23,31 @@ function tasksLabel(n: number): string {
   return `${n} ${word}`;
 }
 
+const badge = "ml-2 inline-block whitespace-nowrap rounded px-1.5 py-0.5 text-xs font-medium";
+
+/** Завдання предмета: що треба зробити, що здано й чекає оцінки, що зараховано. */
+function TaskBadges({ c }: { c: ClassSessionWithSubject }) {
+  return (
+    <>
+      {c.subject_open_tasks > 0 && (
+        <span className={`${badge} bg-accent-soft text-accent`} title="Незавершені завдання">
+          {tasksLabel(c.subject_open_tasks)}
+        </span>
+      )}
+      {c.subject_submitted_tasks > 0 && (
+        <span className={`${badge} bg-warn-soft text-warn`} title="Здано, чекає оцінки">
+          {c.subject_submitted_tasks} здано
+        </span>
+      )}
+      {c.subject_completed_tasks > 0 && (
+        <span className={`${badge} bg-ok-soft text-ok`} title="Зараховано">
+          ✓ {c.subject_completed_tasks} зараховано
+        </span>
+      )}
+    </>
+  );
+}
+
 /** «12:30–13:50», «12:30» або порожньо. */
 export function timeRange(c: Pick<ClassSessionWithSubject, "starts_at" | "ends_at">): string {
   if (!c.starts_at) return "";
@@ -99,11 +124,7 @@ function ClassRow({ c, showSubject, current }: { c: ClassSessionWithSubject; sho
         <span className={`tabular-nums ${struck}`}>{timeRange(c) || <span className="text-muted">час ?</span>}</span>
         <span className={`font-medium ${struck}`}>
           {showSubject ? (c.subject_name ?? "Без предмета") : isControlKind(c.kind) ? <KindBadge kind={c.kind} /> : CLASS_KIND_LABELS[c.kind]}
-          {showSubject && c.subject_open_tasks > 0 && (
-            <span className="ml-2 inline-block whitespace-nowrap rounded bg-accent-soft px-1.5 py-0.5 text-xs font-medium text-accent">
-              {tasksLabel(c.subject_open_tasks)}
-            </span>
-          )}
+          {showSubject && <TaskBadges c={c} />}
         </span>
         <span className="col-start-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-muted md:col-start-3 md:flex-nowrap md:justify-end md:whitespace-nowrap">
           {showSubject && <KindBadge kind={c.kind} />}
