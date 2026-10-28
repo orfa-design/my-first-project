@@ -100,7 +100,31 @@ export function Loading() {
   return <div className="animate-pulse space-y-3"><div className="h-20 rounded-lg bg-surface-muted" /><div className="h-20 rounded-lg bg-surface-muted" /></div>;
 }
 
-/** Текст із збереженими переносами рядків. */
+const URL_PATTERN = /(https?:\/\/[^\s<>«»"]+[^\s<>«»".,;:!?)\]])/g;
+
+/** Коротка назва посилання замість довгої адреси: «drive.google.com ↗». */
+function linkLabel(url: string): string {
+  try {
+    return `${new URL(url).hostname.replace(/^www\./, "")} ↗`;
+  } catch {
+    return url;
+  }
+}
+
+/** Текст із збереженими переносами рядків; адреси в ньому стають клікабельними посиланнями. */
 export function Prose({ children }: { children: string }) {
-  return <p className="whitespace-pre-wrap text-sm leading-relaxed">{children}</p>;
+  const parts = children.split(URL_PATTERN);
+  return (
+    <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <a key={i} href={part} target="_blank" rel="noreferrer" title={part} className="text-accent underline-offset-2 hover:underline">
+            {linkLabel(part)}
+          </a>
+        ) : (
+          part
+        ),
+      )}
+    </p>
+  );
 }
