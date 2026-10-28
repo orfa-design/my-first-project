@@ -56,7 +56,7 @@ async function Week({ searchParams }: { searchParams: PageProps<"/schedule">["se
         </div>
       )}
       {classes.length > 0 && (
-        <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+        <div className="space-y-4">
           {shown.map((date) => (
             <ClassDay key={date} date={date} classes={classes.filter((c) => c.date === date)} />
           ))}
