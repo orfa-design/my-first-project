@@ -2,7 +2,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { Empty, Loading, PageHeader, Section, TaskList } from "@/components/ui";
-import { getDashboard } from "@/lib/data/dashboard";
+import { getDashboard, type SessionSubject } from "@/lib/data/dashboard";
 import { formatDate } from "@/lib/dates";
 import { CONTROL_FORM_LABELS } from "@/lib/labels";
 
@@ -74,22 +74,27 @@ async function DashboardContent() {
 function SessionBlock({ d }: { d: Awaited<ReturnType<typeof getDashboard>> }) {
   const subjects = d.sessionSubjects;
   const totalOpen = subjects.reduce((n, s) => n + s.open_tasks, 0);
+  const sem = d.semester;
 
   return (
-    <Section title="Що залишилося закрити до сесії">
+    <Section title="Сесія і предмети">
       <div className="card p-4">
         <p className="mb-3 text-sm">
-          {d.semester ? (
+          {sem ? (
             d.daysToSession !== null ? (
               <>
-                Сесія з <b>{formatDate(d.semester.session_starts_on!)}</b> — через <b>{d.daysToSession} дн.</b>{" "}
+                Сесія з <b>{formatDate(sem.session_starts_on!)}</b> — через <b>{d.daysToSession} дн.</b>{" "}
               </>
-            ) : d.semester.session_starts_on ? (
-              <>Сесія вже почалася або минула. </>
+            ) : d.sessionOngoing ? (
+              <>
+                Сесія триває до <b>{formatDate(sem.session_ends_on!)}</b>.{" "}
+              </>
+            ) : sem.session_starts_on ? (
+              <>Сесія вже минула. </>
             ) : (
               <>
                 Дата сесії невідома —{" "}
-                <Link href={`/semesters/${d.semester.id}`} className="text-accent underline">додайте її</Link>.{" "}
+                <Link href={`/semesters/${sem.id}`} className="text-accent underline">додайте її</Link>.{" "}
               </>
             )
           ) : (
@@ -98,18 +103,18 @@ function SessionBlock({ d }: { d: Awaited<ReturnType<typeof getDashboard>> }) {
               <Link href="/semesters/new" className="text-accent underline">додайте його</Link>, щоб бачити відлік до сесії.{" "}
             </>
           )}
-          <span className="text-muted">Незавершених завдань: {totalOpen}.</span>
+          <span className="text-muted">Відкритих завдань: {totalOpen}.</span>
         </p>
         {subjects.length > 0 ? (
           <ul className="divide-y divide-border text-sm">
             {subjects.map((s) => (
-              <li key={s.id} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2">
-                <Link href={`/subjects/${s.id}`} className="font-medium hover:text-accent">
+              <li key={s.id} className="flex items-baseline justify-between gap-4 py-2">
+                <Link href={`/subjects/${s.id}`} className="min-w-0 font-medium hover:text-accent">
                   {s.name}
                   {s.control_form && <span className="ml-2 font-normal text-muted">{CONTROL_FORM_LABELS[s.control_form]}</span>}
                 </Link>
-                <span className={s.open_tasks ? "" : "text-muted"}>
-                  {s.open_tasks ? `${s.open_tasks} незаверш.` : "усе здано"}
+                <span className="shrink-0 text-right">
+                  <SubjectStatus s={s} />
                   {s.awaiting_grade > 0 && <span className="text-muted"> · {s.awaiting_grade} чекає оцінки</span>}
                   {s.admission_requirements && <span className="text-muted"> · є вимоги до допуску</span>}
                 </span>
@@ -121,5 +126,20 @@ function SessionBlock({ d }: { d: Awaited<ReturnType<typeof getDashboard>> }) {
         )}
       </div>
     </Section>
+  );
+}
+
+function SubjectStatus({ s }: { s: SessionSubject }) {
+  if (s.open_tasks === 0) {
+    // Без жодного завдання — не «усе здано»: здавати просто нічого не записано.
+    return <span className="text-muted">{s.total_tasks ? "усе здано" : "завдань немає"}</span>;
+  }
+  if (!s.next_due_date) return <span className="text-muted">відкритих: {s.open_tasks}, без дати</span>;
+  return (
+    <>
+      {formatDate(s.next_due_date)}
+      {s.next_due_time && `, ${s.next_due_time.slice(0, 5)}`}
+      {s.open_tasks > 1 && <span className="text-muted"> · відкритих: {s.open_tasks}</span>}
+    </>
   );
 }
