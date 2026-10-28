@@ -4,7 +4,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { Empty, Loading, PageHeader, TaskList } from "@/components/ui";
 import { listSubjects } from "@/lib/data/subjects";
-import { listTasks, type DueFilter } from "@/lib/data/tasks";
+import { listTasks, type DueFilter, type TaskSort } from "@/lib/data/tasks";
 import { STATUS_LABELS } from "@/lib/labels";
 import { TASK_STATUSES, type TaskStatus } from "@/lib/schemas";
 
@@ -16,6 +16,12 @@ const DUE_OPTIONS: { value: DueFilter | ""; label: string }[] = [
   { value: "week", label: "Наступні 7 днів" },
   { value: "upcoming", label: "Майбутні" },
   { value: "none", label: "Без дедлайну" },
+];
+
+const SORT_OPTIONS: { value: TaskSort; label: string }[] = [
+  { value: "due", label: "За дедлайном" },
+  { value: "subject", label: "За предметом" },
+  { value: "created", label: "Нові спочатку" },
 ];
 
 export default function TasksPage({ searchParams }: PageProps<"/tasks">) {
@@ -38,19 +44,21 @@ async function TasksContent({ searchParams }: { searchParams: PageProps<"/tasks"
   const statusParam = one(params.status);
   const due = one(params.due) as DueFilter | undefined;
   const q = one(params.q);
+  const sortParam = one(params.sort);
+  const sort: TaskSort = SORT_OPTIONS.some((o) => o.value === sortParam) ? (sortParam as TaskSort) : "due";
   // За замовчуванням показуємо незавершені; «all» — усі.
   const status = statusParam ?? "open";
   const statuses = TASK_STATUSES.includes(status as TaskStatus) ? [status as TaskStatus] : undefined;
 
   const [tasks, subjects] = await Promise.all([
-    listTasks({ subjectId, statuses, openOnly: status === "open", due, q }),
+    listTasks({ subjectId, statuses, openOnly: status === "open", due, q, sort }),
     listSubjects(),
   ]);
 
   return (
     <>
-      <form className="mb-4 grid gap-2 sm:grid-cols-[1fr_auto_auto_auto_auto]">
-        <input name="q" defaultValue={q} placeholder="Пошук…" className="input" />
+      <form className="mb-4 flex flex-wrap gap-2 [&>select]:sm:w-auto [&>select]:sm:max-w-56">
+        <input name="q" defaultValue={q} placeholder="Пошук…" className="input sm:w-auto sm:min-w-48 sm:flex-1" />
         <select name="subject" defaultValue={subjectId ?? ""} className="input">
           <option value="">Усі предмети</option>
           {subjects.map((s) => (
@@ -66,6 +74,11 @@ async function TasksContent({ searchParams }: { searchParams: PageProps<"/tasks"
         </select>
         <select name="due" defaultValue={due ?? ""} className="input">
           {DUE_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+        <select name="sort" defaultValue={sort} className="input" aria-label="Сортування">
+          {SORT_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </select>
