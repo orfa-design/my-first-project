@@ -70,8 +70,10 @@ export type ClassSession = {
 
 export type ClassSessionWithSubject = ClassSession & {
   subject_name: string | null;
-  /** Незавершені завдання предмета — щоб у розкладі було видно, що по ньому треба зробити. */
+  /** Завдання предмета за станом — щоб у розкладі було видно, що по ньому треба зробити і що вже здано. */
   subject_open_tasks: number;
+  subject_submitted_tasks: number;
+  subject_completed_tasks: number;
 };
 
 export type Assessment = {
