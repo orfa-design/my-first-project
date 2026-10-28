@@ -14,6 +14,12 @@ export type ClassFilter = {
   limit?: number;
 };
 
+/** Колонка subject_open_tasks: незавершені завдання предмета заняття. */
+const openTasks = (sql: postgres.Sql) => sql`
+  (select count(*) from sh_tasks t
+   where t.subject_id = c.subject_id and t.status in ('not_started', 'in_progress', 'needs_revision'))::int
+    as subject_open_tasks`;
+
 export async function listClasses(filter: ClassFilter = {}): Promise<ClassSessionWithSubject[]> {
   const sql = db();
   const where: postgres.PendingQuery<postgres.Row[]>[] = [];
@@ -28,7 +34,7 @@ export async function listClasses(filter: ClassFilter = {}): Promise<ClassSessio
     : sql``;
 
   return sql<ClassSessionWithSubject[]>`
-    select c.*, s.name as subject_name
+    select c.*, s.name as subject_name, ${openTasks(sql)}
     from sh_class_sessions c
     left join sh_subjects s on s.id = c.subject_id
     ${whereSql}
@@ -37,8 +43,9 @@ export async function listClasses(filter: ClassFilter = {}): Promise<ClassSessio
 }
 
 export async function getClass(id: string): Promise<ClassSessionWithSubject | null> {
-  const [row] = await db()<ClassSessionWithSubject[]>`
-    select c.*, s.name as subject_name
+  const sql = db();
+  const [row] = await sql<ClassSessionWithSubject[]>`
+    select c.*, s.name as subject_name, ${openTasks(sql)}
     from sh_class_sessions c left join sh_subjects s on s.id = c.subject_id
     where c.id = ${id}`;
   return row ?? null;
@@ -48,7 +55,7 @@ export async function getClass(id: string): Promise<ClassSessionWithSubject | nu
 export async function findDuplicateClasses(input: Pick<ClassSessionInput, "subject_id" | "date" | "starts_at">) {
   const sql = db();
   return sql<ClassSessionWithSubject[]>`
-    select c.*, s.name as subject_name
+    select c.*, s.name as subject_name, ${openTasks(sql)}
     from sh_class_sessions c left join sh_subjects s on s.id = c.subject_id
     where c.date = ${input.date}
       and c.starts_at is not distinct from ${input.starts_at ?? null}::time

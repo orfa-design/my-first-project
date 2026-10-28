@@ -15,6 +15,14 @@ export function KindBadge({ kind }: { kind: ClassKind }) {
   );
 }
 
+/** «1 завдання», «3 завдання», «5 завдань». */
+function tasksLabel(n: number): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  const word = mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? "завдання" : mod10 === 1 && mod100 !== 11 ? "завдання" : "завдань";
+  return `${n} ${word}`;
+}
+
 /** «12:30–13:50», «12:30» або порожньо. */
 export function timeRange(c: Pick<ClassSessionWithSubject, "starts_at" | "ends_at">): string {
   if (!c.starts_at) return "";
@@ -91,6 +99,11 @@ function ClassRow({ c, showSubject, current }: { c: ClassSessionWithSubject; sho
         <span className={`tabular-nums ${struck}`}>{timeRange(c) || <span className="text-muted">час ?</span>}</span>
         <span className={`font-medium ${struck}`}>
           {showSubject ? (c.subject_name ?? "Без предмета") : isControlKind(c.kind) ? <KindBadge kind={c.kind} /> : CLASS_KIND_LABELS[c.kind]}
+          {showSubject && c.subject_open_tasks > 0 && (
+            <span className="ml-2 inline-block whitespace-nowrap rounded bg-accent-soft px-1.5 py-0.5 text-xs font-medium text-accent">
+              {tasksLabel(c.subject_open_tasks)}
+            </span>
+          )}
         </span>
         <span className="col-start-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-muted md:col-start-3 md:flex-nowrap md:justify-end md:whitespace-nowrap">
           {showSubject && <KindBadge kind={c.kind} />}
