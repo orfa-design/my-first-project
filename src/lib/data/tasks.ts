@@ -5,6 +5,7 @@ import { OPEN_TASK_STATUSES, type TaskInput, type TaskPatch, type TaskStatus } f
 import type { Task, TaskWithSubject } from "../types";
 
 export type DueFilter = "overdue" | "week" | "upcoming" | "none";
+export type TaskSort = "due" | "subject" | "created";
 
 export type TaskFilter = {
   subjectId?: string | null;
@@ -13,6 +14,8 @@ export type TaskFilter = {
   openOnly?: boolean;
   due?: DueFilter;
   q?: string;
+  /** due — найближчий дедлайн першим (за замовчуванням), subject — за предметом, created — нові першими. */
+  sort?: TaskSort;
   limit?: number;
 };
 
@@ -58,7 +61,13 @@ export async function listTasks(filter: TaskFilter = {}): Promise<TaskWithSubjec
     from sh_tasks t
     left join sh_subjects s on s.id = t.subject_id
     ${whereSql}
-    order by t.due_date asc nulls last, t.due_time asc nulls last, t.created_at desc
+    order by ${
+      filter.sort === "subject"
+        ? sql`s.name asc nulls last, t.due_date asc nulls last, t.due_time asc nulls last`
+        : filter.sort === "created"
+          ? sql`t.created_at desc`
+          : sql`t.due_date asc nulls last, t.due_time asc nulls last, t.created_at desc`
+    }
     ${filter.limit ? sql`limit ${filter.limit}` : sql``}`;
 }
 
