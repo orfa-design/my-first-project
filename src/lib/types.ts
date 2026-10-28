@@ -68,7 +68,11 @@ export type ClassSession = {
   updated_at: Date;
 };
 
-export type ClassSessionWithSubject = ClassSession & { subject_name: string | null };
+export type ClassSessionWithSubject = ClassSession & {
+  subject_name: string | null;
+  /** Незавершені завдання предмета — щоб у розкладі було видно, що по ньому треба зробити. */
+  subject_open_tasks: number;
+};
 
 export type Assessment = {
   id: string;
