@@ -48,7 +48,12 @@ export type Task = {
 };
 
 /** Завдання разом із назвою предмета — для списків. */
-export type TaskWithSubject = Task & { subject_name: string | null };
+export type TaskWithSubject = Task & {
+  subject_name: string | null;
+  /** Найближче практичне (чи лабораторне) заняття предмета — орієнтир для завдань без дедлайну. */
+  next_practice_date?: string | null;
+  next_practice_time?: string | null;
+};
 
 export type ClassSession = {
   id: string;

@@ -53,7 +53,18 @@ export function StatusBadge({ status }: { status: TaskStatus }) {
   );
 }
 
-type DueTask = Pick<TaskWithSubject, "due_date" | "due_time" | "status">;
+type DueTask = Pick<TaskWithSubject, "due_date" | "due_time" | "status" | "next_practice_date" | "next_practice_time">;
+
+/** Без дедлайну — нейтрально показуємо найближче практичне заняття предмета як орієнтир. */
+function NoDue({ task }: { task: DueTask }) {
+  if (!task.next_practice_date) return <span className="text-sm text-muted">без дедлайну</span>;
+  return (
+    <span className="text-sm text-muted" title="Дедлайну немає; найближче практичне заняття з предмета">
+      практичне: {formatDate(task.next_practice_date)}
+      {task.next_practice_time && `, ${task.next_practice_time.slice(0, 5)}`}
+    </span>
+  );
+}
 
 /** Наскільки терміновий дедлайн: прострочено — червоний, до 3 днів — жовтий; здане — приглушене. */
 function dueTone(task: DueTask, today: string): string {
@@ -65,7 +76,7 @@ function dueTone(task: DueTask, today: string): string {
 }
 
 export function DueLabel({ task }: { task: DueTask }) {
-  if (!task.due_date) return <span className="text-muted">без дедлайну</span>;
+  if (!task.due_date) return <NoDue task={task} />;
   const today = todayKyiv();
   return (
     <span className={`font-medium ${dueTone(task, today)}`}>
@@ -77,7 +88,7 @@ export function DueLabel({ task }: { task: DueTask }) {
 
 /** Дедлайн у списку — окремим помітним блоком: дата, під нею «через N дн.». */
 function DueBlock({ task }: { task: DueTask }) {
-  if (!task.due_date) return <span className="text-sm text-muted">без дедлайну</span>;
+  if (!task.due_date) return <NoDue task={task} />;
   const today = todayKyiv();
   const tone = dueTone(task, today);
   return (
