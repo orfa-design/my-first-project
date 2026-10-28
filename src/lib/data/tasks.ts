@@ -67,6 +67,13 @@ export async function listTasks(filter: TaskFilter = {}): Promise<TaskWithSubjec
     ? sql`where ${where.reduce((acc, part, i) => (i === 0 ? part : sql`${acc} and ${part}`))}`
     : sql``;
 
+  // Завдання без дедлайну стають у загальний ряд за датою найближчого практичного;
+  // за однакової дати вище — завдання зі справжнім дедлайном.
+  const byDate = sql`
+    coalesce(t.due_date, np.next_practice_date::date) asc nulls last,
+    coalesce(t.due_time, np.next_practice_time::time) asc nulls last,
+    (t.due_date is null) asc`;
+
   return sql<TaskWithSubject[]>`
     select t.*, s.name as subject_name, np.next_practice_date, np.next_practice_time
     from sh_tasks t
@@ -75,10 +82,10 @@ export async function listTasks(filter: TaskFilter = {}): Promise<TaskWithSubjec
     ${whereSql}
     order by ${
       filter.sort === "subject"
-        ? sql`s.name asc nulls last, t.due_date asc nulls last, t.due_time asc nulls last`
+        ? sql`s.name asc nulls last, ${byDate}`
         : filter.sort === "created"
           ? sql`t.created_at desc`
-          : sql`t.due_date asc nulls last, t.due_time asc nulls last, t.created_at desc`
+          : sql`${byDate}, t.created_at desc`
     }
     ${filter.limit ? sql`limit ${filter.limit}` : sql``}`;
 }
