@@ -25,6 +25,17 @@ function toRow(sql: postgres.Sql, input: TaskInput | TaskPatch) {
   return checklist === undefined ? rest : { ...rest, checklist: sql.json(checklist) };
 }
 
+/** Найближче незаскасоване практичне чи лабораторне заняття предмета завдання, від сьогодні. */
+const nextPractice = (sql: postgres.Sql, today: string) => sql`
+  left join lateral (
+    select c.date::text as next_practice_date, c.starts_at::text as next_practice_time
+    from sh_class_sessions c
+    where c.subject_id = t.subject_id and c.kind in ('practice', 'lab')
+      and c.status = 'scheduled' and c.date >= ${today}
+    order by c.date, c.starts_at nulls last
+    limit 1
+  ) np on true`;
+
 export async function listTasks(filter: TaskFilter = {}): Promise<TaskWithSubject[]> {
   const sql = db();
   const today = todayKyiv();
@@ -57,9 +68,10 @@ export async function listTasks(filter: TaskFilter = {}): Promise<TaskWithSubjec
     : sql``;
 
   return sql<TaskWithSubject[]>`
-    select t.*, s.name as subject_name
+    select t.*, s.name as subject_name, np.next_practice_date, np.next_practice_time
     from sh_tasks t
     left join sh_subjects s on s.id = t.subject_id
+    ${nextPractice(sql, today)}
     ${whereSql}
     order by ${
       filter.sort === "subject"
@@ -72,9 +84,11 @@ export async function listTasks(filter: TaskFilter = {}): Promise<TaskWithSubjec
 }
 
 export async function getTask(id: string): Promise<TaskWithSubject | null> {
-  const [row] = await db()<TaskWithSubject[]>`
-    select t.*, s.name as subject_name
+  const sql = db();
+  const [row] = await sql<TaskWithSubject[]>`
+    select t.*, s.name as subject_name, np.next_practice_date, np.next_practice_time
     from sh_tasks t left join sh_subjects s on s.id = t.subject_id
+    ${nextPractice(sql, todayKyiv())}
     where t.id = ${id}`;
   return row ?? null;
 }
