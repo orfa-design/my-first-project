@@ -63,25 +63,29 @@ export function ClassDay({
   );
 }
 
+/**
+ * Одна пара — один рядок на широкому екрані: час | предмет | вид і викладач.
+ * На смартфоні вид і викладач переходять під назву предмета.
+ */
 function ClassRow({ c, showSubject }: { c: ClassSessionWithSubject; showSubject: boolean }) {
   const cancelled = c.status === "cancelled";
+  const struck = cancelled ? "text-muted line-through" : "";
   return (
     <li>
-      <Link href={`/schedule/${c.id}`} className="flex gap-3 px-4 py-2.5 text-sm hover:bg-surface-muted">
-        <span className={`w-24 shrink-0 tabular-nums ${cancelled ? "text-muted line-through" : ""}`}>
-          {timeRange(c) || <span className="text-muted">час ?</span>}
+      <Link
+        href={`/schedule/${c.id}`}
+        className="grid grid-cols-[5.75rem_1fr] items-baseline gap-x-3 gap-y-1 px-4 py-2.5 text-sm hover:bg-surface-muted md:grid-cols-[6.5rem_1fr_auto] md:gap-x-4"
+      >
+        <span className={`tabular-nums ${struck}`}>{timeRange(c) || <span className="text-muted">час ?</span>}</span>
+        <span className={`font-medium ${struck}`}>
+          {showSubject ? (c.subject_name ?? "Без предмета") : isControlKind(c.kind) ? <KindBadge kind={c.kind} /> : CLASS_KIND_LABELS[c.kind]}
         </span>
-        <span className="min-w-0 flex-1">
-          <span className={`font-medium ${cancelled ? "text-muted line-through" : ""}`}>
-            {showSubject ? (c.subject_name ?? "Без предмета") : isControlKind(c.kind) ? <KindBadge kind={c.kind} /> : CLASS_KIND_LABELS[c.kind]}
-          </span>
-          <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-muted">
-            {showSubject && <KindBadge kind={c.kind} />}
-            {cancelled && <span className="text-danger">скасовано</span>}
-            {c.teacher_name && <span>{c.teacher_name}</span>}
-            {c.location && <span>· {c.location}</span>}
-            {c.needs_review && <span className="text-warn">перевірити</span>}
-          </span>
+        <span className="col-start-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-muted md:col-start-3 md:flex-nowrap md:justify-end md:whitespace-nowrap">
+          {showSubject && <KindBadge kind={c.kind} />}
+          {cancelled && <span className="text-danger">скасовано</span>}
+          {c.teacher_name && <span>{c.teacher_name}</span>}
+          {c.location && <span>· {c.location}</span>}
+          {c.needs_review && <span className="text-warn">перевірити</span>}
         </span>
       </Link>
     </li>
