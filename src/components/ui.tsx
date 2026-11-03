@@ -112,7 +112,7 @@ export function TaskList({ tasks, showSubject = true }: { tasks: TaskWithSubject
                 перевірити
               </span>
             )}
-            {showSubject && <div className="truncate text-sm text-muted">{task.subject_name ?? "Без предмета"}</div>}
+            {showSubject && <div className="text-sm text-muted">{task.subject_name ?? "Без предмета"}</div>}
           </div>
           <div className="flex items-center justify-between gap-4 sm:justify-end">
             <DueBlock task={task} />
