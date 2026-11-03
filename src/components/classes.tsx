@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { formatDate, todayKyiv } from "@/lib/dates";
-import { CLASS_KIND_LABELS } from "@/lib/labels";
-import { CONTROL_KINDS, type ClassKind } from "@/lib/schemas";
+import { CLASS_KIND_LABELS, STATUS_LABELS, STATUS_STYLES } from "@/lib/labels";
+import { CONTROL_KINDS, type ClassKind, type TaskStatus } from "@/lib/schemas";
 import type { ClassSessionWithSubject } from "@/lib/types";
 
 export const isControlKind = (kind: ClassKind) => (CONTROL_KINDS as readonly string[]).includes(kind);
@@ -15,35 +15,27 @@ export function KindBadge({ kind }: { kind: ClassKind }) {
   );
 }
 
-/** «1 завдання», «3 завдання», «5 завдань». */
-function tasksLabel(n: number): string {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  const word = mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? "завдання" : mod10 === 1 && mod100 !== 11 ? "завдання" : "завдань";
-  return `${n} ${word}`;
-}
-
 const badge = "ml-2 inline-block whitespace-nowrap rounded px-1.5 py-0.5 text-xs font-medium";
 
-/** Завдання предмета: що треба зробити, що здано й чекає оцінки, що зараховано. */
+/** Завдання предмета за статусами — у тих самих кольорах, що й статус у списку завдань. */
 function TaskBadges({ c }: { c: ClassSessionWithSubject }) {
+  const notStarted = c.subject_open_tasks - c.subject_in_progress_tasks - c.subject_revision_tasks;
+  const items: [TaskStatus, number, string][] = [
+    ["not_started", notStarted, `${notStarted} не розпочато`],
+    ["in_progress", c.subject_in_progress_tasks, `${c.subject_in_progress_tasks} у процесі`],
+    ["needs_revision", c.subject_revision_tasks, `${c.subject_revision_tasks} на доопрацюванні`],
+    ["submitted", c.subject_submitted_tasks, `${c.subject_submitted_tasks} здано`],
+    ["completed", c.subject_completed_tasks, `✓ ${c.subject_completed_tasks} зараховано`],
+  ];
   return (
     <>
-      {c.subject_open_tasks > 0 && (
-        <span className={`${badge} bg-accent-soft text-accent`} title="Незавершені завдання">
-          {tasksLabel(c.subject_open_tasks)}
-        </span>
-      )}
-      {c.subject_submitted_tasks > 0 && (
-        <span className={`${badge} bg-warn-soft text-warn`} title="Здано, чекає оцінки">
-          {c.subject_submitted_tasks} здано
-        </span>
-      )}
-      {c.subject_completed_tasks > 0 && (
-        <span className={`${badge} bg-ok-soft text-ok`} title="Зараховано">
-          ✓ {c.subject_completed_tasks} зараховано
-        </span>
-      )}
+      {items
+        .filter(([, n]) => n > 0)
+        .map(([status, , label]) => (
+          <span key={status} className={`${badge} ${STATUS_STYLES[status]}`} title={STATUS_LABELS[status]}>
+            {label}
+          </span>
+        ))}
     </>
   );
 }

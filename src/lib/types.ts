@@ -76,7 +76,10 @@ export type ClassSession = {
 export type ClassSessionWithSubject = ClassSession & {
   subject_name: string | null;
   /** Завдання предмета за станом — щоб у розкладі було видно, що по ньому треба зробити і що вже здано. */
+  /** Усі незавершені (не розпочато + у процесі + на доопрацюванні). */
   subject_open_tasks: number;
+  subject_in_progress_tasks: number;
+  subject_revision_tasks: number;
   subject_submitted_tasks: number;
   subject_completed_tasks: number;
 };
