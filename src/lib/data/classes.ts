@@ -14,11 +14,15 @@ export type ClassFilter = {
   limit?: number;
 };
 
-/** Лічильники завдань предмета заняття: незавершені, здані без оцінки, зараховані. */
+/** Лічильники завдань предмета заняття: усі незавершені, з них у процесі й на доопрацюванні; здані; зараховані. */
 const taskCounts = (sql: postgres.Sql) => sql`
   (select count(*) from sh_tasks t
    where t.subject_id = c.subject_id and t.status in ('not_started', 'in_progress', 'needs_revision'))::int
     as subject_open_tasks,
+  (select count(*) from sh_tasks t where t.subject_id = c.subject_id and t.status = 'in_progress')::int
+    as subject_in_progress_tasks,
+  (select count(*) from sh_tasks t where t.subject_id = c.subject_id and t.status = 'needs_revision')::int
+    as subject_revision_tasks,
   (select count(*) from sh_tasks t where t.subject_id = c.subject_id and t.status = 'submitted')::int
     as subject_submitted_tasks,
   (select count(*) from sh_tasks t where t.subject_id = c.subject_id and t.status = 'completed')::int

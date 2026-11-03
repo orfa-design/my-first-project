@@ -8,11 +8,14 @@ export const STATUS_LABELS: Record<TaskStatus, string> = {
   needs_revision: "Потребує доопрацювання",
 };
 
-/** Приглушені кольори статусів — для мітки й меню статусу. */
+/**
+ * Кольори статусів — у кожного свій і не збігається з мітками виду пари
+ * (сіра заливка — вид пари, жовтий — екзамен / залік).
+ */
 export const STATUS_STYLES: Record<TaskStatus, string> = {
-  not_started: "bg-surface-muted text-muted",
+  not_started: "bg-transparent text-muted ring-1 ring-inset ring-border",
   in_progress: "bg-accent-soft text-accent",
-  submitted: "bg-warn-soft text-warn",
+  submitted: "bg-violet-soft text-violet",
   completed: "bg-ok-soft text-ok",
   needs_revision: "bg-danger-soft text-danger",
 };

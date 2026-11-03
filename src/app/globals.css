@@ -16,6 +16,8 @@
   --warn-soft: #fdf6e3;
   --ok: #15803d;
   --ok-soft: #eaf6ee;
+  --violet: #7c3aed;
+  --violet-soft: #f1ebff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -34,6 +36,8 @@
     --warn-soft: #34301a;
     --ok: #4ade80;
     --ok-soft: #1a3324;
+    --violet: #c4a5ff;
+    --violet-soft: #2c2342;
   }
 }
 
@@ -52,6 +56,8 @@
   --color-warn-soft: var(--warn-soft);
   --color-ok: var(--ok);
   --color-ok-soft: var(--ok-soft);
+  --color-violet: var(--violet);
+  --color-violet-soft: var(--violet-soft);
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
