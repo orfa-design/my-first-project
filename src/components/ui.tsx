@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { daysBetween, formatDate, relativeDue, todayKyiv } from "@/lib/dates";
-import { STATUS_LABELS } from "@/lib/labels";
+import { STATUS_LABELS, STATUS_STYLES } from "@/lib/labels";
 import { OPEN_TASK_STATUSES, type TaskStatus } from "@/lib/schemas";
 import type { TaskWithSubject } from "@/lib/types";
+import { StatusSelect } from "./status-select";
 
 export function PageHeader({ title, actions, children }: { title: string; actions?: ReactNode; children?: ReactNode }) {
   return (
@@ -37,13 +38,6 @@ export function Empty({ children }: { children: ReactNode }) {
   return <p className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted">{children}</p>;
 }
 
-const STATUS_STYLES: Record<TaskStatus, string> = {
-  not_started: "bg-surface-muted text-muted",
-  in_progress: "bg-accent-soft text-accent",
-  submitted: "bg-warn-soft text-warn",
-  completed: "bg-ok-soft text-ok",
-  needs_revision: "bg-danger-soft text-danger",
-};
 
 export function StatusBadge({ status }: { status: TaskStatus }) {
   return (
@@ -106,27 +100,27 @@ export function TaskList({ tasks, showSubject = true }: { tasks: TaskWithSubject
   return (
     <ul className="card divide-y divide-border">
       {tasks.map((task) => (
-        <li key={task.id}>
-          <Link href={`/tasks/${task.id}`} className="flex flex-col gap-2 px-4 py-3 hover:bg-surface-muted sm:flex-row sm:items-center sm:gap-6">
-            <div className="min-w-0 flex-1">
-              <div className="font-medium">
-                {task.title}
-                {task.needs_review && (
-                  <span className="ml-2 text-xs font-normal text-warn" title="AI не впевнений у частині даних">
-                    перевірити
-                  </span>
-                )}
-              </div>
-              {showSubject && <div className="truncate text-sm text-muted">{task.subject_name ?? "Без предмета"}</div>}
+        // Уся картка клікабельна (посилання розтягнуте на неї), а статус змінюється тут же,
+        // у списку: меню статусу лежить над посиланням.
+        <li key={task.id} className="relative flex flex-col gap-2 px-4 py-3 hover:bg-surface-muted sm:flex-row sm:items-center sm:gap-6">
+          <div className="min-w-0 flex-1">
+            <Link href={`/tasks/${task.id}`} className="font-medium after:absolute after:inset-0">
+              {task.title}
+            </Link>
+            {task.needs_review && (
+              <span className="ml-2 text-xs font-normal text-warn" title="AI не впевнений у частині даних">
+                перевірити
+              </span>
+            )}
+            {showSubject && <div className="truncate text-sm text-muted">{task.subject_name ?? "Без предмета"}</div>}
+          </div>
+          <div className="flex items-center justify-between gap-4 sm:justify-end">
+            <DueBlock task={task} />
+            <div className="flex items-center gap-2 sm:w-48 sm:justify-end">
+              {task.result && <span className="text-sm text-muted">{task.result}</span>}
+              <StatusSelect taskId={task.id} status={task.status} />
             </div>
-            <div className="flex items-center justify-between gap-4 sm:justify-end">
-              <DueBlock task={task} />
-              <div className="flex items-center gap-2 sm:w-44 sm:justify-end">
-                {task.result && <span className="text-sm text-muted">{task.result}</span>}
-                <StatusBadge status={task.status} />
-              </div>
-            </div>
-          </Link>
+          </div>
         </li>
       ))}
     </ul>
