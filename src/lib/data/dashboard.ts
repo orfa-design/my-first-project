@@ -7,7 +7,7 @@ import { gradeTextSql, listClasses } from "./classes";
 import { getCurrentSemester } from "./semesters";
 import { listTasks } from "./tasks";
 
-export type SessionSubject = Pick<Subject, "id" | "name" | "control_form" | "admission_requirements"> & {
+export type SessionSubject = Pick<Subject, "id" | "name" | "control_form" | "admission_requirements" | "is_closed"> & {
   total_tasks: number;
   open_tasks: number;
   awaiting_grade: number;
@@ -62,7 +62,7 @@ export async function getDashboard(): Promise<Dashboard> {
       // Предмети поточного семестру (або всі, якщо семестр не задано): спершу за датою
       // екзамену чи заліку, далі за найближчим дедлайном, решта за назвою.
       sql<SessionSubject[]>`
-        select s.id, s.name, s.control_form, s.admission_requirements,
+        select s.id, s.name, s.control_form, s.admission_requirements, s.is_closed,
           count(t.id)::int as total_tasks,
           count(t.id) filter (where t.status in ('not_started', 'in_progress', 'needs_revision'))::int as open_tasks,
           count(t.id) filter (where t.status = 'submitted')::int as awaiting_grade,
@@ -91,7 +91,7 @@ export async function getDashboard(): Promise<Dashboard> {
         ) cr on true
         ${semester ? sql`where s.semester_id = ${semester.id}` : sql``}
         group by s.id, nd.due_date, nd.due_time, ctl.kind, ctl.date, ctl.starts_at, cr.control_result
-        order by (cr.control_result is not null), ctl.date nulls last, ctl.starts_at nulls last, nd.due_date nulls last, nd.due_time nulls last,
+        order by s.is_closed, (cr.control_result is not null), ctl.date nulls last, ctl.starts_at nulls last, nd.due_date nulls last, nd.due_time nulls last,
           open_tasks desc, s.name`,
       sql<{ subjects: number; tasks: number; classes: number }[]>`
         select (select count(*) from sh_subjects)::int as subjects, (select count(*) from sh_tasks)::int as tasks,

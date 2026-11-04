@@ -24,6 +24,8 @@ export type Subject = {
   grading_rules: string | null;
   admission_requirements: string | null;
   notes: string | null;
+  /** Залік / екзамен складено, предмет не потребує уваги. */
+  is_closed: boolean;
   created_at: Date;
   updated_at: Date;
 };
@@ -84,6 +86,8 @@ export type ClassSessionWithSubject = ClassSession & {
   subject_completed_tasks: number;
   /** Оцінка, прив'язана до заняття (для екзамену чи заліку — результат). */
   grade_text: string | null;
+  /** Предмет позначено закритим — заняття приглушуються. */
+  subject_closed: boolean;
 };
 
 export type Assessment = {

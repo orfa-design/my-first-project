@@ -62,6 +62,8 @@ export const subjectInput = z.object({
   grading_rules: optionalText,
   admission_requirements: optionalText,
   notes: optionalText,
+  /** Закрито: залік / екзамен складено, предмет не потребує уваги — приглушується в розкладі. */
+  is_closed: z.boolean().optional(),
 });
 
 export const checklistItem = z.object({
