@@ -28,6 +28,16 @@ const taskCounts = (sql: postgres.Sql) => sql`
   (select count(*) from sh_tasks t where t.subject_id = c.subject_id and t.status = 'completed')::int
     as subject_completed_tasks`;
 
+/** Текст останньої оцінки, прив'язаної до заняття: «18 / 20», «зараховано» або обидва. */
+export const gradeTextSql = (sql: postgres.Sql) => sql`
+  concat_ws(' · ',
+    case when a.score is not null then trim_scale(a.score)::text || coalesce(' / ' || trim_scale(a.max_score)::text, '') end,
+    a.result_text)`;
+
+const gradeColumn = (sql: postgres.Sql) => sql`
+  (select ${gradeTextSql(sql)} from sh_assessments a
+   where a.class_session_id = c.id order by a.created_at desc limit 1) as grade_text`;
+
 export async function listClasses(filter: ClassFilter = {}): Promise<ClassSessionWithSubject[]> {
   const sql = db();
   const where: postgres.PendingQuery<postgres.Row[]>[] = [];
@@ -42,7 +52,7 @@ export async function listClasses(filter: ClassFilter = {}): Promise<ClassSessio
     : sql``;
 
   return sql<ClassSessionWithSubject[]>`
-    select c.*, s.name as subject_name, ${taskCounts(sql)}
+    select c.*, s.name as subject_name, ${taskCounts(sql)}, ${gradeColumn(sql)}
     from sh_class_sessions c
     left join sh_subjects s on s.id = c.subject_id
     ${whereSql}
@@ -53,7 +63,7 @@ export async function listClasses(filter: ClassFilter = {}): Promise<ClassSessio
 export async function getClass(id: string): Promise<ClassSessionWithSubject | null> {
   const sql = db();
   const [row] = await sql<ClassSessionWithSubject[]>`
-    select c.*, s.name as subject_name, ${taskCounts(sql)}
+    select c.*, s.name as subject_name, ${taskCounts(sql)}, ${gradeColumn(sql)}
     from sh_class_sessions c left join sh_subjects s on s.id = c.subject_id
     where c.id = ${id}`;
   return row ?? null;
@@ -63,7 +73,7 @@ export async function getClass(id: string): Promise<ClassSessionWithSubject | nu
 export async function findDuplicateClasses(input: Pick<ClassSessionInput, "subject_id" | "date" | "starts_at">) {
   const sql = db();
   return sql<ClassSessionWithSubject[]>`
-    select c.*, s.name as subject_name, ${taskCounts(sql)}
+    select c.*, s.name as subject_name, ${taskCounts(sql)}, ${gradeColumn(sql)}
     from sh_class_sessions c left join sh_subjects s on s.id = c.subject_id
     where c.date = ${input.date}
       and c.starts_at is not distinct from ${input.starts_at ?? null}::time

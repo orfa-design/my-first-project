@@ -134,7 +134,9 @@ function SessionBlock({ d }: { d: Awaited<ReturnType<typeof getDashboard>> }) {
                   {s.control_form && <span className="ml-2 font-normal text-muted">{CONTROL_FORM_LABELS[s.control_form]}</span>}
                 </Link>
                 <span className="sm:shrink-0 sm:text-right">
-                  {s.control_date && (
+                  {s.control_result ? (
+                    <span className="block font-medium text-ok">✓ {s.control_result}</span>
+                  ) : s.control_date && (
                     <span className="block">
                       {formatDate(s.control_date)}
                       {s.control_time && `, ${s.control_time.slice(0, 5)}`}
