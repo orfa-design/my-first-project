@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { KindBadge, timeRange } from "@/components/classes";
 import { SubjectOverview } from "@/components/subject-overview";
 import { Loading, Prose } from "@/components/ui";
+import { saveClassNoteAction } from "../actions";
 import { getClass } from "@/lib/data/classes";
 import { getSubject } from "@/lib/data/subjects";
 import { formatDate, relativeDue } from "@/lib/dates";
@@ -62,9 +63,18 @@ async function ClassDetails({ params }: { params: PageProps<"/schedule/[id]">["p
           AI позначив, що частина даних про це заняття може бути неточною.
         </p>
       )}
-      {session.notes && (
-        <div className="card mb-8 p-4"><Prose>{session.notes}</Prose></div>
-      )}
+      <form action={saveClassNoteAction.bind(null, id)} className="card mb-8 space-y-2 p-4">
+        <label htmlFor="class-note" className="text-sm font-semibold">Моя нотатка до пари</label>
+        <textarea
+          id="class-note"
+          name="notes"
+          rows={2}
+          defaultValue={session.notes ?? ""}
+          placeholder="Наприклад: можна не ходити, принести ноутбук, перенесли в іншу аудиторію…"
+          className="input"
+        />
+        <button className="btn-secondary">Зберегти нотатку</button>
+      </form>
 
       {subject && <SubjectOverview subject={subject} currentClassId={session.id} />}
 

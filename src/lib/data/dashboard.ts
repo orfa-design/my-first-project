@@ -3,7 +3,7 @@ import { addDays, daysBetween, todayKyiv } from "../dates";
 import type { ClassKind } from "../schemas";
 import type { AssessmentWithSubject, ClassSessionWithSubject, Semester, Subject, TaskWithSubject } from "../types";
 import { listAssessments } from "./assessments";
-import { listClasses } from "./classes";
+import { gradeTextSql, listClasses } from "./classes";
 import { getCurrentSemester } from "./semesters";
 import { listTasks } from "./tasks";
 
@@ -18,6 +18,8 @@ export type SessionSubject = Pick<Subject, "id" | "name" | "control_form" | "adm
   control_kind: ClassKind | null;
   control_date: string | null;
   control_time: string | null;
+  /** Оцінка за екзамен / залік, якщо вже є в журналі. */
+  control_result: string | null;
 };
 
 export type Dashboard = {
@@ -65,7 +67,8 @@ export async function getDashboard(): Promise<Dashboard> {
           count(t.id) filter (where t.status in ('not_started', 'in_progress', 'needs_revision'))::int as open_tasks,
           count(t.id) filter (where t.status = 'submitted')::int as awaiting_grade,
           nd.due_date::text as next_due_date, nd.due_time::text as next_due_time,
-          ctl.kind as control_kind, ctl.date::text as control_date, ctl.starts_at::text as control_time
+          ctl.kind as control_kind, ctl.date::text as control_date, ctl.starts_at::text as control_time,
+          cr.control_result
         from sh_subjects s
         left join sh_tasks t on t.subject_id = s.id
         left join lateral (
@@ -80,9 +83,15 @@ export async function getDashboard(): Promise<Dashboard> {
             and c.status = 'scheduled' and c.date >= ${today}
           order by c.date, c.starts_at nulls last limit 1
         ) ctl on true
+        left join lateral (
+          select ${gradeTextSql(sql)} as control_result
+          from sh_assessments a join sh_class_sessions cc on cc.id = a.class_session_id
+          where cc.subject_id = s.id and cc.kind in ('exam', 'credit', 'diff_credit')
+          order by a.created_at desc limit 1
+        ) cr on true
         ${semester ? sql`where s.semester_id = ${semester.id}` : sql``}
-        group by s.id, nd.due_date, nd.due_time, ctl.kind, ctl.date, ctl.starts_at
-        order by ctl.date nulls last, ctl.starts_at nulls last, nd.due_date nulls last, nd.due_time nulls last,
+        group by s.id, nd.due_date, nd.due_time, ctl.kind, ctl.date, ctl.starts_at, cr.control_result
+        order by (cr.control_result is not null), ctl.date nulls last, ctl.starts_at nulls last, nd.due_date nulls last, nd.due_time nulls last,
           open_tasks desc, s.name`,
       sql<{ subjects: number; tasks: number; classes: number }[]>`
         select (select count(*) from sh_subjects)::int as subjects, (select count(*) from sh_tasks)::int as tasks,

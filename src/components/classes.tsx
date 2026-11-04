@@ -120,11 +120,21 @@ function ClassRow({ c, showSubject, current }: { c: ClassSessionWithSubject; sho
         </span>
         <span className="col-start-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-muted md:col-start-3 md:flex-nowrap md:justify-end md:whitespace-nowrap">
           {showSubject && <KindBadge kind={c.kind} />}
+          {c.grade_text && (
+            <span className="rounded bg-ok-soft px-1.5 py-0.5 text-xs font-medium text-ok" title="Оцінка в журналі">
+              ✓ {c.grade_text}
+            </span>
+          )}
           {cancelled && <span className="text-danger">скасовано</span>}
           {c.teacher_name && <span>{c.teacher_name}</span>}
           {c.location && <span>· {c.location}</span>}
           {c.needs_review && <span className="text-warn">перевірити</span>}
         </span>
+        {c.notes && (
+          <span className="col-start-2 line-clamp-2 whitespace-pre-line text-xs text-muted md:col-end-4" title={c.notes}>
+            📝 {c.notes}
+          </span>
+        )}
       </Link>
     </li>
   );

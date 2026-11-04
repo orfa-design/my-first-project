@@ -82,6 +82,8 @@ export type ClassSessionWithSubject = ClassSession & {
   subject_revision_tasks: number;
   subject_submitted_tasks: number;
   subject_completed_tasks: number;
+  /** Оцінка, прив'язана до заняття (для екзамену чи заліку — результат). */
+  grade_text: string | null;
 };
 
 export type Assessment = {

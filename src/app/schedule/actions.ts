@@ -1,5 +1,6 @@
 "use server";
 
+import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth";
 import { createClass, deleteClass, updateClass } from "@/lib/data/classes";
@@ -36,4 +37,13 @@ export async function deleteClassAction(id: string, date: string): Promise<void>
   await requireSession();
   await deleteClass(id);
   redirect(`/schedule?week=${date}`);
+}
+
+/** Нотатка до пари прямо зі сторінки пари — без повної форми редагування. */
+export async function saveClassNoteAction(id: string, formData: FormData): Promise<void> {
+  await requireSession();
+  const parsed = classSessionPatch.pick({ notes: true }).safeParse({ notes: formData.get("notes") ?? "" });
+  if (!parsed.success) return;
+  await updateClass(id, parsed.data);
+  refresh();
 }
