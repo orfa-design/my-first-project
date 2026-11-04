@@ -1,5 +1,6 @@
 "use server";
 
+import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth";
 import { createSubject, deleteSubject, updateSubject } from "@/lib/data/subjects";
@@ -31,4 +32,11 @@ export async function deleteSubjectAction(id: string): Promise<void> {
   await requireSession();
   await deleteSubject(id);
   redirect("/subjects");
+}
+
+/** Позначити предмет закритим (не потребує уваги) або повернути в роботу. */
+export async function setSubjectClosedAction(id: string, closed: boolean): Promise<void> {
+  await requireSession();
+  await updateSubject(id, { is_closed: closed });
+  refresh();
 }

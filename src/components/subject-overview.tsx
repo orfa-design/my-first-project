@@ -10,6 +10,7 @@ import { todayKyiv } from "@/lib/dates";
 import { CONTROL_FORM_LABELS } from "@/lib/labels";
 import { OPEN_TASK_STATUSES } from "@/lib/schemas";
 import type { Subject } from "@/lib/types";
+import { setSubjectClosedAction } from "@/app/subjects/actions";
 
 /** Усе про предмет: викладач, вимоги, заняття, завдання, оцінки. Спільне для сторінок предмета й заняття. */
 export async function SubjectOverview({ subject, currentClassId }: { subject: Subject; currentClassId?: string }) {
@@ -36,6 +37,18 @@ export async function SubjectOverview({ subject, currentClassId }: { subject: Su
 
   return (
     <>
+      <form
+        action={setSubjectClosedAction.bind(null, id, !subject.is_closed)}
+        className={`card mb-4 flex flex-wrap items-center justify-between gap-3 p-3 text-sm ${subject.is_closed ? "bg-ok-soft" : ""}`}
+      >
+        <span className={subject.is_closed ? "text-ok" : "text-muted"}>
+          {subject.is_closed
+            ? "✓ Предмет закрито — у розкладі й на головній він приглушений."
+            : "Склали залік чи екзамен і більше не потрібно стежити? Позначте предмет закритим — його пари приглушаться."}
+        </span>
+        <button className="btn-secondary">{subject.is_closed ? "Повернути в роботу" : "Позначити закритим"}</button>
+      </form>
+
       {facts.length > 0 && (
         <dl className="card mb-8 grid gap-x-6 gap-y-2 p-4 text-sm sm:grid-cols-[auto_1fr]">
           {facts.map(([k, v]) => (

@@ -128,7 +128,11 @@ function SessionBlock({ d }: { d: Awaited<ReturnType<typeof getDashboard>> }) {
         {subjects.length > 0 ? (
           <ul className="divide-y divide-border text-sm">
             {subjects.map((s) => (
-              <li key={s.id} className="flex flex-col gap-0.5 py-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+              <li
+                key={s.id}
+                title={s.is_closed ? "Предмет закрито — не потребує уваги" : undefined}
+                className={`flex flex-col gap-0.5 py-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4 ${s.is_closed ? "opacity-45" : ""}`}
+              >
                 <Link href={`/subjects/${s.id}`} className="min-w-0 font-medium hover:text-accent">
                   {s.name}
                   {s.control_form && <span className="ml-2 font-normal text-muted">{CONTROL_FORM_LABELS[s.control_form]}</span>}

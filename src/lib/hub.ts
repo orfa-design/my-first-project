@@ -66,7 +66,8 @@ const HELP = `Study Hub CLI. Використання: npm run hub -- <кома�
   subject get <id>                        Предмет + його завдання, заняття й оцінки
   subject create '<json>' [--force]       Поля: name, code, semester_id, teacher_name, teacher_contacts,
                                           control_form (exam|credit|diff_credit|other), grading_rules,
-                                          admission_requirements, notes
+                                          admission_requirements, notes, is_closed (true — залік/екзамен
+                                          складено, предмет приглушується в розкладі)
   subject update <id> '<json>'            Лише передані поля; null очищає поле
   subject delete <id>
 
