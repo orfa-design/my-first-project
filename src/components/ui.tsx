@@ -131,8 +131,6 @@ export function Loading() {
   return <div className="animate-pulse space-y-3"><div className="h-20 rounded-lg bg-surface-muted" /><div className="h-20 rounded-lg bg-surface-muted" /></div>;
 }
 
-const URL_PATTERN = /(https?:\/\/[^\s<>«»"]+[^\s<>«»".,;:!?)\]])/g;
-
 /** Коротка назва посилання замість довгої адреси: «drive.google.com ↗». */
 function linkLabel(url: string): string {
   try {
@@ -142,20 +140,104 @@ function linkLabel(url: string): string {
   }
 }
 
-/** Текст із збереженими переносами рядків; адреси в ньому стають клікабельними посиланнями. */
+const linkClass = "text-accent underline-offset-2 hover:underline";
+
+/** Посилання [текст](адреса), жирний **…**, курсив *…* / _…_ і голі адреси. */
+const INLINE_PATTERN = /(\[[^\]\n]+\]\(https?:\/\/[^\s)]+\)|\*\*[^*\n]+\*\*|(?<![\p{L}\d])[*_][^*_\n]+[*_](?![\p{L}\d])|https?:\/\/[^\s<>«»"]+[^\s<>«»".,;:!?)\]])/gu;
+
+function Inline({ text }: { text: string }): ReactNode {
+  const parts = text.split(INLINE_PATTERN);
+  return parts.map((part, i) => {
+    if (i % 2 === 0) return part;
+    const link = /^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/.exec(part);
+    if (link) {
+      return (
+        <a key={i} href={link[2]} target="_blank" rel="noreferrer" title={link[2]} className={linkClass}>
+          {link[1]}
+        </a>
+      );
+    }
+    if (part.startsWith("**")) return <strong key={i}>{part.slice(2, -2)}</strong>;
+    if (/^[*_]/.test(part)) return <em key={i}>{part.slice(1, -1)}</em>;
+    return (
+      <a key={i} href={part} target="_blank" rel="noreferrer" title={part} className={linkClass}>
+        {linkLabel(part)}
+      </a>
+    );
+  });
+}
+
+type Block =
+  | { kind: "heading"; level: number; text: string }
+  | { kind: "list"; ordered: boolean; items: string[] }
+  | { kind: "paragraph"; lines: string[] };
+
+const BULLET = /^\s*[-*•]\s+/;
+const NUMBERED = /^\s*\d+[.)]\s+/;
+
+/** Простий розбір Markdown: заголовки (#), списки (-, •, 1.), абзаци; одинарний перенос — новий рядок. */
+function parseBlocks(text: string): Block[] {
+  const blocks: Block[] = [];
+  for (const raw of text.replace(/\r\n/g, "\n").split("\n")) {
+    const line = raw.trimEnd();
+    const last = blocks[blocks.length - 1];
+    const heading = /^(#{1,4})\s+(.*)$/.exec(line);
+    if (!line.trim()) {
+      blocks.push({ kind: "paragraph", lines: [] });
+    } else if (heading) {
+      blocks.push({ kind: "heading", level: heading[1].length, text: heading[2] });
+    } else if (BULLET.test(line) || NUMBERED.test(line)) {
+      const ordered = NUMBERED.test(line);
+      const item = line.replace(ordered ? NUMBERED : BULLET, "");
+      if (last?.kind === "list" && last.ordered === ordered) last.items.push(item);
+      else blocks.push({ kind: "list", ordered, items: [item] });
+    } else if (last?.kind === "paragraph") {
+      last.lines.push(line);
+    } else if (last?.kind === "list" && /^\s{2,}/.test(raw)) {
+      // Продовження пункту списку з відступом.
+      last.items[last.items.length - 1] += "\n" + line.trim();
+    } else {
+      blocks.push({ kind: "paragraph", lines: [line] });
+    }
+  }
+  return blocks.filter((b) => b.kind !== "paragraph" || b.lines.length > 0);
+}
+
+const HEADING_CLASS = ["", "text-base font-semibold", "text-sm font-semibold", "text-sm font-semibold", "text-sm font-medium"];
+
+/**
+ * Текст із простою розміткою Markdown: заголовки, списки, **жирний**, *курсив*, посилання.
+ * Адреси стають клікабельними посиланнями з короткою назвою. HTML не підтримується — лише текст.
+ */
 export function Prose({ children }: { children: string }) {
-  const parts = children.split(URL_PATTERN);
   return (
-    <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
-      {parts.map((part, i) =>
-        i % 2 === 1 ? (
-          <a key={i} href={part} target="_blank" rel="noreferrer" title={part} className="text-accent underline-offset-2 hover:underline">
-            {linkLabel(part)}
-          </a>
-        ) : (
-          part
-        ),
-      )}
-    </p>
+    <div className="space-y-2 break-words text-sm leading-relaxed">
+      {parseBlocks(children).map((block, i) => {
+        if (block.kind === "heading") {
+          return (
+            <p key={i} className={`${HEADING_CLASS[block.level]} pt-1`}>
+              <Inline text={block.text} />
+            </p>
+          );
+        }
+        if (block.kind === "list") {
+          const List = block.ordered ? "ol" : "ul";
+          return (
+            <List key={i} className={`${block.ordered ? "list-decimal" : "list-disc"} space-y-0.5 pl-5`}>
+              {block.items.map((item, j) => (
+                <li key={j} className="whitespace-pre-line">
+                  <Inline text={item} />
+                </li>
+              ))}
+            </List>
+          );
+        }
+        return (
+          <p key={i} className="whitespace-pre-line">
+            <Inline text={block.lines.join("\n")} />
+          </p>
+        );
+      })}
+    </div>
   );
 }
