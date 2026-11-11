@@ -110,3 +110,25 @@ export type Assessment = {
 };
 
 export type AssessmentWithSubject = Assessment & { subject_name: string | null };
+
+export type WishList = {
+  id: string;
+  title: string;
+  intro: string | null;
+  share_token: string;
+  created_at: Date;
+  updated_at: Date;
+};
+
+export type WishItem = {
+  id: string;
+  list_id: string;
+  title: string;
+  url: string | null;
+  price: string | null;
+  note: string | null;
+  priority: "low" | "normal" | "high" | null;
+  is_hidden: boolean;
+  created_at: Date;
+  updated_at: Date;
+};

@@ -10,6 +10,15 @@ import {
 import { createClass, deleteClass, findDuplicateClasses, getClass, listClasses, updateClass } from "./data/classes";
 import { getDashboard } from "./data/dashboard";
 import {
+  createItem,
+  deleteItem,
+  getList,
+  listItems,
+  regenerateToken,
+  updateItem,
+  updateList,
+} from "./data/wishlist";
+import {
   createSemester,
   getCurrentSemester,
   getSemester,
@@ -40,6 +49,9 @@ import {
   classSessionInput,
   classSessionPatch,
   semesterInput,
+  wishItemInput,
+  wishItemPatch,
+  wishListPatch,
   semesterPatch,
   subjectInput,
   subjectPatch,
@@ -100,6 +112,14 @@ const HELP = `Study Hub CLI. Використання: npm run hub -- <кома�
                                           source_text, source_url, needs_review
   grade update <id> '<json>'
   grade delete <id>
+
+  wish show                               Вішліст: назва, вступ, публічне посилання (/w/<ключ>), усі бажання
+  wish add '<json>'                       Поля: title, url, price (текстом, «≈ 1500 грн»), note,
+                                          priority (low|normal|high), is_hidden
+  wish update <id> '<json>'
+  wish delete <id>
+  wish list-update '<json>'               Назва й вступ списку: title, intro
+  wish new-link                           Новий ключ посилання — старе перестане працювати
 
   '<json>' можна замінити на "-" і передати JSON через stdin.
   create без --force відмовляє, якщо знайдено схожий запис (код виходу 2).`;
@@ -328,6 +348,28 @@ export async function runHubCommand(argv: string[], stdin?: string): Promise<unk
           return { deleted: a1 };
       }
       break;
+
+    case "wish": {
+      const list = orNotFound(await getList(), "Вішліст");
+      switch (action) {
+        case "show":
+          return { ...list, public_path: `/w/${list.share_token}`, items: await listItems(list.id, { includeHidden: true }) };
+        case "add":
+          return createItem(list.id, validate(wishItemInput, readJson(a1, stdin)));
+        case "update":
+          return orNotFound(await updateItem(need(a1, "id"), validate(wishItemPatch, readJson(a2, stdin))), "Бажання");
+        case "delete":
+          await deleteItem(need(a1, "id"));
+          return { deleted: a1 };
+        case "list-update":
+          return updateList(list.id, validate(wishListPatch, readJson(a1, stdin)));
+        case "new-link": {
+          const updated = orNotFound(await regenerateToken(list.id), "Вішліст");
+          return { public_path: `/w/${updated.share_token}` };
+        }
+      }
+      break;
+    }
 
     case "grade":
       switch (action) {
