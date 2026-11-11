@@ -130,6 +130,9 @@ export type WishItem = {
   note: string | null;
   priority: "low" | "normal" | "high" | null;
   is_hidden: boolean;
+  /** Бронь «Я беру це» з публічної сторінки. Власниці не показується. */
+  reserved_at: Date | null;
+  reserved_by: string | null;
   created_at: Date;
   updated_at: Date;
 };

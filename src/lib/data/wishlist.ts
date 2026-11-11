@@ -64,3 +64,19 @@ export async function regenerateToken(id: string): Promise<WishList | null> {
   const [row] = await db()<WishList[]>`update wl_lists set share_token = ${token} where id = ${id} returning *`;
   return row ?? null;
 }
+
+/** «Я беру це»: бронює видиме бажання списку, якщо його ще ніхто не взяв. */
+export async function reserveItem(listId: string, itemId: string, visitor: string): Promise<boolean> {
+  const rows = await db()`
+    update wl_items set reserved_at = now(), reserved_by = ${visitor}
+    where id = ${itemId} and list_id = ${listId} and not is_hidden and reserved_at is null
+    returning id`;
+  return rows.length > 0;
+}
+
+/** Скасувати бронь може лише той самий браузер, що її зробив. */
+export async function releaseItem(listId: string, itemId: string, visitor: string): Promise<void> {
+  await db()`
+    update wl_items set reserved_at = null, reserved_by = null
+    where id = ${itemId} and list_id = ${listId} and reserved_by = ${visitor}`;
+}
