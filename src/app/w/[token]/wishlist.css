@@ -50,11 +50,13 @@
 .wl[data-theme="xmas"] .wl-card { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 14px; }
 .wl[data-theme="xmas"] .wl-to, .wl[data-theme="xmas"] .wl-name, .wl[data-theme="xmas"] .wl-note { grid-column: 1 / -1; padding-right: 70px; }
 .wl[data-theme="xmas"] .wl-to { font-family: var(--wl-xmas-hand), cursive; font-size: 18px; color: #7a7262; }
-.wl[data-theme="xmas"] .wl-mark { margin-left: 8px; display: inline-block; transform: rotate(4deg); }
-.wl[data-theme="xmas"] .wl-mark-high { color: #b3262e; font-size: 20px; }
-.wl[data-theme="xmas"] .wl-mark-high::before { content: "дуже хочу!"; }
-.wl[data-theme="xmas"] .wl-mark-low { color: #8a8273; font-size: 17px; }
-.wl[data-theme="xmas"] .wl-mark-low::before { content: "якщо нічого іншого"; }
+/* Пріоритет — чорнильний штамп біля ціни, окремо від звертання. */
+.wl[data-theme="xmas"] .wl-mark { grid-column: 2; order: 1; justify-self: start; margin-top: 12px; padding: 3px 10px; border: 2px solid currentColor; border-radius: 4px;
+  font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; transform: rotate(-4deg); }
+.wl[data-theme="xmas"] .wl-mark-high { color: #b3262e; background: #b3262e12; }
+.wl[data-theme="xmas"] .wl-mark-low { color: #6f685c; border-style: dashed; }
+.wl[data-theme="xmas"] .wl-mark + .wl-go { margin-top: 8px; }
+.wl[data-theme="xmas"] .wl-card:has(.wl-mark) .wl-price { grid-row: span 2; }
 .wl[data-theme="xmas"] .wl-name { font-family: var(--wl-xmas-hand), cursive; font-size: 28px; line-height: 1.05; color: #1f2a44; margin-top: 2px; font-weight: 600; }
 .wl[data-theme="xmas"] .wl-note { color: #6f685c; }
 .wl[data-theme="xmas"] .wl-price, .wl[data-theme="xmas"] .wl-go { order: 1; }
@@ -70,7 +72,7 @@
 /* ===== Подарункове ===== */
 .wl[data-theme="gift"] { --wl-foot: "Дякую, що вибираєш для мене ✨"; font-family: var(--wl-gift-text), system-ui, sans-serif; color: #2d2a3e;
   background: #fffaf3 radial-gradient(#f3e3d3 1.2px, transparent 1.3px) 0 0 / 22px 22px; }
-.wl[data-theme="gift"] .wl-snow, .wl[data-theme="gift"] .wl-stamp, .wl[data-theme="gift"] .wl-to { display: none; }
+.wl[data-theme="gift"] .wl-snow, .wl[data-theme="gift"] .wl-stamp, .wl[data-theme="gift"] .wl-to, .wl[data-theme="gift"] .wl-mark { display: none; }
 .wl[data-theme="gift"] .wl-title { font-family: var(--wl-gift-title), cursive; font-size: clamp(46px, 8vw, 68px); }
 .wl[data-theme="gift"] .wl-title::after { content: " 🎁"; }
 .wl[data-theme="gift"] .wl-intro { background: #fff; border: 2px dashed #f0a7b9; border-radius: 18px; padding: 14px 18px; color: #6f6a85; }
