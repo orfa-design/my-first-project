@@ -78,9 +78,7 @@ function WishTag({ item, index }: { item: WishItem; index: number }) {
       <span className="wl-bow" aria-hidden>🎀</span>
       {item.priority === "high" && <span className="wl-fav" />}
       {item.priority === "low" && <span className="wl-low" />}
-      <span className={`wl-stamp ${item.image_url ? "wl-stamp-img" : ""}`} aria-hidden>
-        {item.image_url ? <Picture src={item.image_url} /> : STAMPS[index % STAMPS.length]}
-      </span>
+      <span className="wl-stamp" aria-hidden>{STAMPS[index % STAMPS.length]}</span>
       <div className="wl-card">
         {item.image_url && (
           <div className="wl-pic">
