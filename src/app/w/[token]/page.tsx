@@ -80,13 +80,11 @@ function WishTag({ item, index }: { item: WishItem; index: number }) {
       {item.priority === "low" && <span className="wl-low" />}
       <span className="wl-stamp" aria-hidden>{STAMPS[index % STAMPS.length]}</span>
       <div className="wl-card">
-        <div className="wl-to">
-          Дорогий Санто, хочу…
-          {item.priority === "high" && <span className="wl-mark wl-mark-high" />}
-          {item.priority === "low" && <span className="wl-mark wl-mark-low" />}
-        </div>
+        <div className="wl-to">Дорогий Санто, хочу…</div>
         <div className="wl-name">{item.title}</div>
         {item.price && <span className="wl-price">{item.price}</span>}
+        {item.priority === "high" && <span className="wl-mark wl-mark-high">дуже хочу!</span>}
+        {item.priority === "low" && <span className="wl-mark wl-mark-low">запасний варіант</span>}
         {item.note && (
           <div className="wl-note">
             <Prose>{item.note}</Prose>
