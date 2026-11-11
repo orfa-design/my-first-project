@@ -78,15 +78,11 @@ function WishTag({ item, index }: { item: WishItem; index: number }) {
       <span className="wl-bow" aria-hidden>🎀</span>
       {item.priority === "high" && <span className="wl-fav" />}
       {item.priority === "low" && <span className="wl-low" />}
-      <span className={`wl-stamp ${item.image_url ? "wl-stamp-img" : ""}`} aria-hidden>
-        {item.image_url ? <Picture src={item.image_url} /> : STAMPS[index % STAMPS.length]}
-      </span>
+      <span className="wl-stamp" aria-hidden>{STAMPS[index % STAMPS.length]}</span>
       <div className="wl-card">
-        {item.image_url && (
-          <div className="wl-pic">
-            <Picture src={item.image_url} />
-          </div>
-        )}
+        <div className={`wl-pic ${item.image_url ? "" : "wl-pic-none"}`} aria-hidden={!item.image_url || undefined}>
+          {item.image_url ? <Picture src={item.image_url} /> : "🎁"}
+        </div>
         <div className="wl-to">Дорогий Санто, хочу…</div>
         <div className="wl-name">{item.title}</div>
         {item.price && <span className="wl-price">{item.price}</span>}
@@ -99,7 +95,8 @@ function WishTag({ item, index }: { item: WishItem; index: number }) {
         )}
         {item.url && (
           <a className="wl-go" href={item.url} target="_blank" rel="noreferrer">
-            Переглянути на {host(item.url)}
+            <span className="wl-go-label">Переглянути на </span>
+            <span className="wl-go-host">{host(item.url)}</span>
           </a>
         )}
       </div>

@@ -3,10 +3,17 @@ import { headers } from "next/headers";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { Empty, Loading, PageHeader, Section } from "@/components/ui";
-import { WishForm } from "@/components/wish-form";
+import { WishEditor, WishForm } from "@/components/wish-form";
 import { WishCard } from "@/components/wishlist";
 import { getList, listItems } from "@/lib/data/wishlist";
-import { addWishAction, deleteWishAction, setWishHiddenAction, setWishImageAction, updateWishListAction } from "./actions";
+import {
+  addWishAction,
+  deleteWishAction,
+  setWishHiddenAction,
+  setWishImageAction,
+  updateWishAction,
+  updateWishListAction,
+} from "./actions";
 
 export const metadata: Metadata = { title: "Вішліст" };
 
@@ -68,6 +75,7 @@ async function Wishlist() {
                 item={item}
                 actions={
                   <>
+                    <WishEditor item={item} action={updateWishAction.bind(null, item.id)} />
                     <form action={setWishHiddenAction.bind(null, item.id, !item.is_hidden)}>
                       <button className="btn-secondary px-2.5 py-1 text-xs">
                         {item.is_hidden ? "Показати в публічному списку" : "Приховати"}

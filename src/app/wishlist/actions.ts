@@ -5,7 +5,7 @@ import { requireSession } from "@/lib/auth";
 import { createItem, deleteItem, getItem, getList, updateItem, updateList } from "@/lib/data/wishlist";
 import { findPreviewImage, withPreviewImage } from "@/lib/link-preview";
 import { pickFields, type FormState } from "@/lib/form";
-import { firstIssue, wishItemInput, wishListPatch } from "@/lib/schemas";
+import { firstIssue, wishItemInput, wishItemPatch, wishListPatch } from "@/lib/schemas";
 
 export async function addWishAction(_prev: FormState, formData: FormData): Promise<FormState> {
   await requireSession();
@@ -19,6 +19,28 @@ export async function addWishAction(_prev: FormState, formData: FormData): Promi
   });
   if (!parsed.success) return { error: firstIssue(parsed.error) };
   await createItem(list.id, await withPreviewImage(parsed.data));
+  refresh();
+  return {};
+}
+
+/**
+ * Зберегти зміни бажання з форми. Картинка: якщо поле очистили або змінили посилання
+ * (а картинку лишили ту саму) — шукаємо прев'ю заново.
+ */
+export async function updateWishAction(id: string, _prev: FormState, formData: FormData): Promise<FormState> {
+  await requireSession();
+  const item = await getItem(id);
+  if (!item) return { error: "Бажання не знайдено" };
+  const fields = pickFields(formData, ["title", "url", "price", "note", "priority", "image_url"]);
+  const parsed = wishItemPatch.safeParse(fields);
+  if (!parsed.success) return { error: firstIssue(parsed.error) };
+  const patch = { ...parsed.data };
+  const urlChanged = (patch.url ?? null) !== item.url;
+  const imageUntouched = (patch.image_url ?? null) === item.image_url;
+  if (!patch.image_url || (urlChanged && imageUntouched)) {
+    patch.image_url = patch.url ? await findPreviewImage(patch.url) : null;
+  }
+  await updateItem(id, patch);
   refresh();
   return {};
 }
