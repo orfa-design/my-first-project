@@ -109,7 +109,7 @@ function ClassRow({ c, showSubject, current }: { c: ClassSessionWithSubject; sho
   return (
     <li>
       <Link
-        href={`/schedule/${c.id}`}
+        href={`/study/schedule/${c.id}`}
         aria-current={current ? "page" : undefined}
         title={c.subject_closed ? "Предмет закрито — не потребує уваги" : undefined}
         className={`${current ? "bg-accent-soft" : "hover:bg-surface-muted"} ${c.subject_closed ? "opacity-45" : ""} grid grid-cols-[5.75rem_1fr] items-baseline gap-x-3 gap-y-1 px-4 py-2.5 text-sm md:grid-cols-[6.5rem_1fr_auto] md:gap-x-4`}

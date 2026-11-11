@@ -1,0 +1,184 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { connection } from "next/server";
+import { Suspense } from "react";
+import { ClassDays } from "@/components/classes";
+import { GradeList } from "@/components/grades";
+import { Empty, Loading, PageHeader, Section, TaskList } from "@/components/ui";
+import { getDashboard, type SessionSubject } from "@/lib/data/dashboard";
+import { formatDate } from "@/lib/dates";
+import { CONTROL_FORM_LABELS } from "@/lib/labels";
+
+export const metadata: Metadata = { title: "Study Hub" };
+
+export default function DashboardPage() {
+  return (
+    <>
+      <PageHeader title="Огляд" />
+      <Suspense fallback={<Loading />}>
+        <DashboardContent />
+      </Suspense>
+    </>
+  );
+}
+
+async function DashboardContent() {
+  await connection();
+  const d = await getDashboard();
+
+  if (d.counts.subjects === 0 && d.counts.tasks === 0 && d.counts.classes === 0) {
+    return (
+      <Empty>
+        Тут поки порожньо. Найпростіше почати з чату з Claude: надішліть список предметів або оголошення
+        викладача, і він створить записи. Або додайте{" "}
+        <Link href="/study/semesters/new" className="text-accent underline">семестр</Link> і{" "}
+        <Link href="/study/subjects/new" className="text-accent underline">предмет</Link> вручну.
+      </Empty>
+    );
+  }
+
+  return (
+    <>
+      <SessionBlock d={d} />
+
+      {d.overdue.length > 0 && (
+        <Section title="Прострочено" count={d.overdue.length}>
+          <TaskList tasks={d.overdue} />
+        </Section>
+      )}
+
+      <Section
+        title="Найближчі заняття"
+        count={d.upcomingClasses.length}
+        action={<Link href="/study/schedule" className="text-sm text-accent">розклад →</Link>}
+      >
+        {d.upcomingClasses.length ? (
+          <ClassDays classes={d.upcomingClasses} />
+        ) : (
+          <Empty>Запланованих занять немає. Надішліть Claude розклад — він додасть заняття.</Empty>
+        )}
+      </Section>
+
+      <Section
+        title="Найближчі дедлайни"
+        count={d.upcoming.length}
+        action={<Link href="/study/tasks?due=upcoming" className="text-sm text-accent">усі →</Link>}
+      >
+        {d.upcoming.length ? <TaskList tasks={d.upcoming} /> : <Empty>Найближчих дедлайнів немає.</Empty>}
+      </Section>
+
+      {d.awaitingGrade.length > 0 && (
+        <Section title="Здано, чекає оцінки" count={d.awaitingGrade.length}>
+          <TaskList tasks={d.awaitingGrade} />
+        </Section>
+      )}
+
+      {d.needsReview.length > 0 && (
+        <Section title="Перевірити дані від AI" count={d.needsReview.length}>
+          <TaskList tasks={d.needsReview} />
+        </Section>
+      )}
+
+      {d.recentGrades.length > 0 && (
+        <Section title="Останні оцінки" action={<Link href="/study/grades" className="text-sm text-accent">усі →</Link>}>
+          <GradeList grades={d.recentGrades} />
+        </Section>
+      )}
+
+      {d.recentResults.length > 0 && (
+        <Section title="Останні результати">
+          <TaskList tasks={d.recentResults} />
+        </Section>
+      )}
+    </>
+  );
+}
+
+function SessionBlock({ d }: { d: Awaited<ReturnType<typeof getDashboard>> }) {
+  const subjects = d.sessionSubjects;
+  const totalOpen = subjects.reduce((n, s) => n + s.open_tasks, 0);
+  const sem = d.semester;
+
+  return (
+    <Section title="Сесія і предмети">
+      <div className="card p-4">
+        <p className="mb-3 text-sm">
+          {sem ? (
+            d.daysToSession !== null ? (
+              <>
+                Сесія з <b>{formatDate(sem.session_starts_on!)}</b> — через <b>{d.daysToSession} дн.</b>{" "}
+              </>
+            ) : d.sessionOngoing ? (
+              <>
+                Сесія триває до <b>{formatDate(sem.session_ends_on!)}</b>.{" "}
+              </>
+            ) : sem.session_starts_on ? (
+              <>Сесія вже минула. </>
+            ) : (
+              <>
+                Дата сесії невідома —{" "}
+                <Link href={`/study/semesters/${sem.id}`} className="text-accent underline">додайте її</Link>.{" "}
+              </>
+            )
+          ) : (
+            <>
+              Поточний семестр не задано —{" "}
+              <Link href="/study/semesters/new" className="text-accent underline">додайте його</Link>, щоб бачити відлік до сесії.{" "}
+            </>
+          )}
+          <span className="text-muted">Відкритих завдань: {totalOpen}.</span>
+        </p>
+        {subjects.length > 0 ? (
+          <ul className="divide-y divide-border text-sm">
+            {subjects.map((s) => (
+              <li
+                key={s.id}
+                title={s.is_closed ? "Предмет закрито — не потребує уваги" : undefined}
+                className={`flex flex-col gap-0.5 py-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4 ${s.is_closed ? "opacity-45" : ""}`}
+              >
+                <Link href={`/study/subjects/${s.id}`} className="min-w-0 font-medium hover:text-accent">
+                  {s.name}
+                  {s.control_form && <span className="ml-2 font-normal text-muted">{CONTROL_FORM_LABELS[s.control_form]}</span>}
+                </Link>
+                <span className="sm:shrink-0 sm:text-right">
+                  {s.control_result ? (
+                    <span className="block font-medium text-ok">✓ {s.control_result}</span>
+                  ) : s.control_date && (
+                    <span className="block">
+                      {formatDate(s.control_date)}
+                      {s.control_time && `, ${s.control_time.slice(0, 5)}`}
+                    </span>
+                  )}
+                  <SubjectStatus s={s} />
+                  {s.awaiting_grade > 0 && <span className="text-muted"> · {s.awaiting_grade} чекає оцінки</span>}
+                  {s.admission_requirements && <span className="text-muted"> · є вимоги до допуску</span>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted">Предметів поточного семестру ще немає.</p>
+        )}
+      </div>
+    </Section>
+  );
+}
+
+/** Стан завдань предмета. Якщо є дата екзамену чи заліку, він уже показаний вище — тут лише завдання. */
+function SubjectStatus({ s }: { s: SessionSubject }) {
+  if (s.open_tasks === 0) {
+    if (s.control_date && !s.total_tasks) return null;
+    // Без жодного завдання — не «усе здано»: здавати просто нічого не записано.
+    return <span className="text-muted">{s.total_tasks ? "усе здано" : "завдань немає"}</span>;
+  }
+  const tasks = s.open_tasks === 1 ? "1 завдання" : `завдань: ${s.open_tasks}`;
+  if (!s.next_due_date) return <span className="block text-muted">{tasks}, без дати</span>;
+  return (
+    <span className={s.control_date ? "block text-muted" : "block"}>
+      {s.control_date ? `${tasks}, до ` : ""}
+      {formatDate(s.next_due_date)}
+      {s.next_due_time && `, ${s.next_due_time.slice(0, 5)}`}
+      {!s.control_date && s.open_tasks > 1 && <span className="text-muted"> · {tasks}</span>}
+    </span>
+  );
+}

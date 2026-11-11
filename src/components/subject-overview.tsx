@@ -10,7 +10,7 @@ import { todayKyiv } from "@/lib/dates";
 import { CONTROL_FORM_LABELS } from "@/lib/labels";
 import { OPEN_TASK_STATUSES } from "@/lib/schemas";
 import type { Subject } from "@/lib/types";
-import { setSubjectClosedAction } from "@/app/subjects/actions";
+import { setSubjectClosedAction } from "@/app/study/subjects/actions";
 
 /** Усе про предмет: викладач, вимоги, заняття, завдання, оцінки. Спільне для сторінок предмета й заняття. */
 export async function SubjectOverview({ subject, currentClassId }: { subject: Subject; currentClassId?: string }) {
@@ -80,7 +80,7 @@ export async function SubjectOverview({ subject, currentClassId }: { subject: Su
       <Section
         title="Найближчі заняття"
         count={classes.length}
-        action={<Link href={`/schedule/new?subject=${id}`} className="text-sm text-accent">+ заняття</Link>}
+        action={<Link href={`/study/schedule/new?subject=${id}`} className="text-sm text-accent">+ заняття</Link>}
       >
         {classes.length ? (
           <ClassDays classes={classes} showSubject={false} currentId={currentClassId} />
@@ -92,7 +92,7 @@ export async function SubjectOverview({ subject, currentClassId }: { subject: Su
       <Section
         title="Потрібно зробити"
         count={open.length}
-        action={<Link href={`/tasks/new?subject=${id}`} className="text-sm text-accent">+ завдання</Link>}
+        action={<Link href={`/study/tasks/new?subject=${id}`} className="text-sm text-accent">+ завдання</Link>}
       >
         {open.length ? <TaskList tasks={open} showSubject={false} /> : <Empty>Незавершених завдань немає.</Empty>}
       </Section>
@@ -112,7 +112,7 @@ export async function SubjectOverview({ subject, currentClassId }: { subject: Su
       <Section
         title="Оцінки"
         count={grades.length}
-        action={<Link href={`/grades/new?subject=${id}`} className="text-sm text-accent">+ оцінка</Link>}
+        action={<Link href={`/study/grades/new?subject=${id}`} className="text-sm text-accent">+ оцінка</Link>}
       >
         {grades.length ? <GradeList grades={grades} showSubject={false} /> : <Empty>Оцінок ще немає.</Empty>}
       </Section>

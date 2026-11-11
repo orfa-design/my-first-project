@@ -13,7 +13,7 @@ export function GradeList({ grades, showSubject = true }: { grades: AssessmentWi
     <ul className="card divide-y divide-border">
       {grades.map((g) => (
         <li key={g.id}>
-          <Link href={`/grades/${g.id}`} className="flex items-baseline gap-4 px-4 py-3 hover:bg-surface-muted">
+          <Link href={`/study/grades/${g.id}`} className="flex items-baseline gap-4 px-4 py-3 hover:bg-surface-muted">
             <div className="min-w-0 flex-1">
               <div className="font-medium">
                 {g.title}
