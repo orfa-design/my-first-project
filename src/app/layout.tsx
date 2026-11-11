@@ -4,8 +4,8 @@ import { Nav } from "@/components/nav";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "Study Hub", template: "%s · Study Hub" },
-  description: "Особистий простір для навчання: предмети, завдання, дедлайни",
+  title: { default: "Мій простір", template: "%s · Мій простір" },
+  description: "Особистий простір: навчання (Study Hub) і вішліст",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

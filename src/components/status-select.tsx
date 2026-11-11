@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { setTaskStatusAction } from "@/app/tasks/actions";
+import { setTaskStatusAction } from "@/app/study/tasks/actions";
 import { STATUS_LABELS, STATUS_STYLES } from "@/lib/labels";
 import { TASK_STATUSES, type TaskStatus } from "@/lib/schemas";
 

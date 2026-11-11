@@ -14,7 +14,9 @@
 - `src/lib/schemas.ts` — zod-схеми, спільні для форм і CLI.
 - `src/lib/data/*` — усі запити до бази. Сторінки й дії ходять у базу лише через них.
 - `src/lib/hub.ts` — команди для AI; `scripts/hub.ts` — CLI над ними; `src/app/api/hub` — той самий вхід по HTTPS.
-- `src/app/*` — сторінки. Дані читаються в async-компонентах усередині `<Suspense>` після `await connection()`.
+- `src/app/*` — сторінки. Сайт поділено на розділи-підпроєкти зі своїм меню (`src/components/nav.tsx`):
+  `/` — стартова сторінка, `/study/*` — Study Hub, `/wishlist` — вішліст (`/w/<ключ>` — його публічна сторінка).
+  Дані читаються в async-компонентах усередині `<Suspense>` після `await connection()`.
 
 Перевірки перед комітом: `npm run typecheck && npm run lint && npm run build`.
 

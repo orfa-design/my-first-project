@@ -104,7 +104,7 @@ export function TaskList({ tasks, showSubject = true }: { tasks: TaskWithSubject
         // у списку: меню статусу лежить над посиланням.
         <li key={task.id} className="relative flex flex-col gap-2 px-4 py-3 hover:bg-surface-muted sm:flex-row sm:items-center sm:gap-6">
           <div className="min-w-0 flex-1">
-            <Link href={`/tasks/${task.id}`} className="font-medium after:absolute after:inset-0">
+            <Link href={`/study/tasks/${task.id}`} className="font-medium after:absolute after:inset-0">
               {task.title}
             </Link>
             {task.needs_review && (
