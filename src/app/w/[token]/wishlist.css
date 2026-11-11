@@ -7,6 +7,8 @@
 .wl-title { margin: 0; text-align: center; line-height: 1.05; font-weight: 400; }
 .wl-intro { max-width: 560px; margin: 18px auto 40px; text-align: center; line-height: 1.6; }
 .wl-list { list-style: none; padding: 0; margin: 0; display: grid; }
+/* Без вступу список іде одразу після заголовка — потрібен той самий відступ, що дає вступ. */
+.wl-head + .wl-list, .wl-head + .wl-empty { margin-top: 40px; }
 .wl-item { position: relative; }
 .wl-name { font-weight: 600; }
 .wl-note { margin-top: 6px; font-size: 14px; }
@@ -36,7 +38,7 @@
 .wl[data-theme="xmas"] .wl-toggle { background: #ffffff1a; }
 .wl[data-theme="xmas"] .wl-toggle button { color: #cfe3d6; }
 .wl[data-theme="xmas"] .wl-toggle button[aria-pressed="true"] { background: #d8b46a; color: #0f3326; }
-.wl[data-theme="xmas"] .wl-list { gap: 26px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); max-width: 760px; margin: 0 auto; }
+.wl[data-theme="xmas"] .wl-list { gap: 26px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); max-width: 760px; margin-left: auto; margin-right: auto; }
 .wl[data-theme="xmas"] .wl-item { background: #fbf6ea; color: #2b2a26; border-radius: 6px 22px 22px 6px; padding: 22px 22px 20px 46px;
   box-shadow: 0 10px 24px #0006; transform: rotate(var(--wl-tilt, 0deg)); }
 .wl[data-theme="xmas"] .wl-item::before { content: ""; position: absolute; left: 16px; top: 50%; width: 12px; height: 12px; margin-top: -6px;
@@ -45,6 +47,11 @@
   padding: 5px 12px; border-radius: 3px 0 0 3px; box-shadow: 0 3px 8px #0004; }
 .wl[data-theme="xmas"] .wl-fav::before { content: "дуже хочу"; }
 .wl[data-theme="xmas"] .wl-bow { display: none; }
+/* Низький пріоритет — спокійна позначка замість стрічки. */
+.wl[data-theme="xmas"] .wl-low { position: absolute; top: 12px; right: 14px; color: #8a8273; border: 1px solid #d9d0bd; font-size: 12px;
+  padding: 3px 9px; border-radius: 999px; }
+.wl[data-theme="xmas"] .wl-low::before { content: "запасний варіант"; }
+.wl[data-theme="xmas"] .wl-item:has(.wl-low) .wl-name { padding-right: 120px; }
 .wl[data-theme="xmas"] .wl-name { font-size: 18px; }
 .wl[data-theme="xmas"] .wl-item:has(.wl-fav) .wl-name { padding-right: 70px; }
 .wl[data-theme="xmas"] .wl-price { display: block; color: #b3262e; font-weight: 600; margin-top: 4px; }
@@ -53,7 +60,7 @@
   color: #fbf6ea; font-size: 14px; font-weight: 500; }
 .wl[data-theme="xmas"] .wl-go:hover { background: #b3262e; }
 .wl[data-theme="xmas"] .wl-go::after { content: " ↗"; }
-.wl[data-theme="xmas"] .wl-empty { border: 1px dashed #d8b46a88; color: #cfe3d6; max-width: 560px; margin: 0 auto; }
+.wl[data-theme="xmas"] .wl-empty { border: 1px dashed #d8b46a88; color: #cfe3d6; max-width: 560px; margin-left: auto; margin-right: auto; }
 .wl[data-theme="xmas"] .wl-foot { color: #9fbfae; }
 
 /* ===== Подарункове ===== */
@@ -76,9 +83,12 @@
 .wl[data-theme="gift"] .wl-fav { position: absolute; top: 10px; right: 12px; z-index: 1; background: #fff; border-radius: 999px; padding: 3px 9px;
   font-size: 12px; font-weight: 800; color: #d13a6a; }
 .wl[data-theme="gift"] .wl-fav::before { content: "♥ дуже хочу"; }
+.wl[data-theme="gift"] .wl-low { position: absolute; top: 10px; right: 12px; z-index: 1; background: #ffffffcc; border-radius: 999px; padding: 3px 9px;
+  font-size: 12px; font-weight: 700; color: #8a86a0; }
+.wl[data-theme="gift"] .wl-low::before { content: "запасний варіант"; }
 .wl[data-theme="gift"] .wl-price { margin-top: 10px; background: #2d2a3e; color: #fff; font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 4px 12px 12px 4px; }
 .wl[data-theme="gift"] .wl-go { display: block; margin-top: 12px; text-align: center; background: #2d2a3e; color: #fff; font-weight: 800; padding: 10px;
   border-radius: 12px; font-size: 14px; }
 .wl[data-theme="gift"] .wl-go:hover { background: #000; }
-.wl[data-theme="gift"] .wl-empty { background: #fff; border: 2px dashed #f0a7b9; color: #6f6a85; max-width: 560px; margin: 0 auto; }
+.wl[data-theme="gift"] .wl-empty { background: #fff; border: 2px dashed #f0a7b9; color: #6f6a85; max-width: 560px; margin-left: auto; margin-right: auto; }
 .wl[data-theme="gift"] .wl-foot { color: #6f6a85; font-weight: 600; }

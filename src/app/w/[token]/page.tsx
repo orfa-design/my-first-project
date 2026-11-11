@@ -55,7 +55,7 @@ async function PublicWishlist({ params }: { params: PageProps<"/w/[token]">["par
     <ThemedWishlist
       title={list.title}
       fontClasses={FONT_CLASSES}
-      intro={list.intro ? <div className="wl-intro"><Prose>{list.intro}</Prose></div> : <div className="wl-intro" hidden />}
+      intro={list.intro ? <div className="wl-intro"><Prose>{list.intro}</Prose></div> : null}
     >
       {items.length ? (
         <ul className="wl-list">
@@ -77,6 +77,7 @@ function WishTag({ item, index }: { item: WishItem; index: number }) {
     <li className="wl-item" style={style}>
       <span className="wl-bow" aria-hidden>🎀</span>
       {item.priority === "high" && <span className="wl-fav" />}
+      {item.priority === "low" && <span className="wl-low" />}
       <div className="wl-card">
         <div className="wl-name">{item.title}</div>
         {item.price && <span className="wl-price">{item.price}</span>}
