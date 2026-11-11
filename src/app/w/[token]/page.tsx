@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense, type CSSProperties } from "react";
 import { Prose } from "@/components/ui";
 import { getListByToken, listItems } from "@/lib/data/wishlist";
 import type { WishItem } from "@/lib/types";
+import { releaseWishAction, reserveWishAction } from "./actions";
 import { giftText, giftTitle, xmasHand, xmasText, xmasTitle } from "./fonts";
 import { ThemedWishlist } from "./themed-wishlist";
 import "./wishlist.css";
@@ -50,6 +52,7 @@ async function PublicWishlist({ params }: { params: PageProps<"/w/[token]">["par
   const list = await getListByToken(token);
   if (!list) notFound();
   const items = await listItems(list.id);
+  const visitor = (await cookies()).get("wl_visitor")?.value ?? null;
 
   return (
     <ThemedWishlist
@@ -60,7 +63,7 @@ async function PublicWishlist({ params }: { params: PageProps<"/w/[token]">["par
       {items.length ? (
         <ul className="wl-list">
           {items.map((item, i) => (
-            <WishTag key={item.id} item={item} index={i} />
+            <WishTag key={item.id} item={item} index={i} token={token} visitor={visitor} />
           ))}
         </ul>
       ) : (
@@ -70,11 +73,11 @@ async function PublicWishlist({ params }: { params: PageProps<"/w/[token]">["par
   );
 }
 
-function WishTag({ item, index }: { item: WishItem; index: number }) {
+function WishTag({ item, index, token, visitor }: { item: WishItem; index: number; token: string; visitor: string | null }) {
   const [c, d] = BOXES[index % BOXES.length];
   const style = { "--wl-c": c, "--wl-d": d } as CSSProperties;
   return (
-    <li className="wl-item" style={style}>
+    <li className={`wl-item ${item.reserved_at && item.reserved_by !== visitor ? "wl-reserved" : ""}`} style={style}>
       <span className="wl-bow" aria-hidden>🎀</span>
       {item.priority === "high" && <span className="wl-fav" />}
       {item.priority === "low" && <span className="wl-low" />}
@@ -99,6 +102,7 @@ function WishTag({ item, index }: { item: WishItem; index: number }) {
             <span className="wl-go-host">{host(item.url)}</span>
           </a>
         )}
+        <Take item={item} token={token} visitor={visitor} />
       </div>
     </li>
   );
@@ -108,4 +112,38 @@ function WishTag({ item, index }: { item: WishItem; index: number }) {
 function Picture({ src }: { src: string }) {
   // eslint-disable-next-line @next/next/no-img-element
   return <img src={src} alt="" loading="lazy" referrerPolicy="no-referrer" />;
+}
+
+/**
+ * «Кладу в мішок» / «Я подарую це»: бронь для того, хто вибирає подарунок.
+ * Тексти для обох тем — у розмітці, тема показує свій.
+ */
+function Take({ item, token, visitor }: { item: WishItem; token: string; visitor: string | null }) {
+  if (!item.reserved_at) {
+    return (
+      <form className="wl-take" action={reserveWishAction.bind(null, token, item.id)}>
+        <button className="wl-take-btn">
+          <span className="wl-x">🎅 Кладу в мішок</span>
+          <span className="wl-g">🎁 Я подарую це</span>
+        </button>
+      </form>
+    );
+  }
+  if (visitor && item.reserved_by === visitor) {
+    return (
+      <form className="wl-take wl-take-mine" action={releaseWishAction.bind(null, token, item.id)}>
+        <span className="wl-take-note">
+          <span className="wl-x">✓ У вашому мішку</span>
+          <span className="wl-g">✓ Ви даруєте це</span>
+        </span>
+        <button className="wl-undo">передумати</button>
+      </form>
+    );
+  }
+  return (
+    <div className="wl-take wl-take-other">
+      <span className="wl-x">Вже в чиємусь мішку 🎅</span>
+      <span className="wl-g">Вже хтось дарує 🎁</span>
+    </div>
+  );
 }

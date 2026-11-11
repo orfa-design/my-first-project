@@ -120,3 +120,26 @@
 .wl[data-theme="gift"] .wl-empty { background: #fff; border: 2px dashed #f0a7b9; color: #6f6a85; max-width: 560px; margin-left: auto; margin-right: auto; }
 .wl[data-theme="gift"] .wl-foot { color: #6f6a85; font-weight: 600; }
 .wl[data-theme="xmas"] .wl-list { align-items: start; }
+
+/* «Я беру це»: кнопка броні, позначка «вже хтось бере» і «передумати» для того, хто взяв. */
+.wl[data-theme="xmas"] .wl-g, .wl[data-theme="gift"] .wl-x { display: none; }
+.wl .wl-take { grid-column: 1 / -1; order: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 14px; }
+.wl .wl-take-btn, .wl .wl-undo { font: inherit; cursor: pointer; }
+.wl .wl-undo { background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: 3px; font-size: 13px; }
+.wl .wl-reserved .wl-pic, .wl .wl-reserved .wl-name, .wl .wl-reserved .wl-note { opacity: .55; }
+
+.wl[data-theme="xmas"] .wl-take-btn { width: 100%; padding: 11px 16px; border: 0; border-radius: 999px; background: #b3262e; color: #fff;
+  font-weight: 700; font-size: 15px; box-shadow: 0 3px 0 #7d1a20; }
+.wl[data-theme="xmas"] .wl-take-btn:hover { background: #c92f38; }
+.wl[data-theme="xmas"] .wl-take-mine .wl-take-note { color: #1f5c44; font-weight: 700; }
+.wl[data-theme="xmas"] .wl-undo { color: #7a7262; }
+.wl[data-theme="xmas"] .wl-take-other { justify-content: center; padding: 9px 14px; border: 2px dashed #8a8273; border-radius: 999px;
+  color: #6f685c; font-weight: 700; font-size: 14px; }
+
+.wl[data-theme="gift"] .wl-take-btn { width: 100%; padding: 10px 14px; border: 2px solid #2f2418; border-radius: 12px; background: #fff3c4;
+  color: #2f2418; font-weight: 800; font-size: 15px; box-shadow: 0 3px 0 #2f2418; }
+.wl[data-theme="gift"] .wl-take-btn:hover { background: #ffe89a; }
+.wl[data-theme="gift"] .wl-take-mine .wl-take-note { color: #3f7a4f; font-weight: 800; }
+.wl[data-theme="gift"] .wl-undo { color: #9a8670; }
+.wl[data-theme="gift"] .wl-take-other { justify-content: center; padding: 8px 12px; border-radius: 12px; background: #f4efe6;
+  color: #8b7a66; font-weight: 800; font-size: 14px; }

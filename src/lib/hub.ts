@@ -19,6 +19,13 @@ import {
   updateList,
 } from "./data/wishlist";
 import { withPreviewImage } from "./link-preview";
+import type { WishItem } from "./types";
+
+/** Бажання без броней «Я беру це»: що саме обрали — сюрприз для власниці. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function ownerView({ reserved_at: _at, reserved_by: _by, ...item }: WishItem) {
+  return item;
+}
 import {
   createSemester,
   getCurrentSemester,
@@ -355,11 +362,11 @@ export async function runHubCommand(argv: string[], stdin?: string): Promise<unk
       const list = orNotFound(await getList(), "Вішліст");
       switch (action) {
         case "show":
-          return { ...list, public_path: `/w/${list.share_token}`, items: await listItems(list.id, { includeHidden: true }) };
+          return { ...list, public_path: `/w/${list.share_token}`, items: (await listItems(list.id, { includeHidden: true })).map(ownerView) };
         case "add":
-          return createItem(list.id, await withPreviewImage(validate(wishItemInput, readJson(a1, stdin))));
+          return ownerView(await createItem(list.id, await withPreviewImage(validate(wishItemInput, readJson(a1, stdin)))));
         case "update":
-          return orNotFound(await updateItem(need(a1, "id"), await withPreviewImage(validate(wishItemPatch, readJson(a2, stdin)))), "Бажання");
+          return ownerView(orNotFound(await updateItem(need(a1, "id"), await withPreviewImage(validate(wishItemPatch, readJson(a2, stdin)))), "Бажання"));
         case "delete":
           await deleteItem(need(a1, "id"));
           return { deleted: a1 };
