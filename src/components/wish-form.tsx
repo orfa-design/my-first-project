@@ -2,9 +2,11 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import type { FormState } from "@/lib/form";
-import { PRIORITY_LABELS } from "@/lib/labels";
 import { PRIORITIES } from "@/lib/schemas";
 import { Field } from "./form-shell";
+
+/** Як пріоритет бачить той, хто вибирає подарунок. */
+const WISH_PRIORITY_LABELS = { low: "Запасний варіант", normal: "Звичайне", high: "Дуже хочу" } as const;
 
 type Action = (prev: FormState, formData: FormData) => Promise<FormState>;
 
@@ -37,7 +39,7 @@ export function WishForm({ action }: { action: Action }) {
           <select name="priority" defaultValue="" className="input">
             <option value="">—</option>
             {PRIORITIES.map((p) => (
-              <option key={p} value={p}>{PRIORITY_LABELS[p]}</option>
+              <option key={p} value={p}>{WISH_PRIORITY_LABELS[p]}</option>
             ))}
           </select>
         </Field>

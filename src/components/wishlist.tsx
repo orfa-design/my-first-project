@@ -21,6 +21,7 @@ export function WishCard({ item, actions }: { item: WishItem; actions?: ReactNod
             {item.title}
           </div>
           {item.price && <div className="text-sm text-muted">{item.price}</div>}
+          {item.priority === "low" && <div className="text-xs text-muted">запасний варіант</div>}
         </div>
         {item.url && (
           <a href={item.url} target="_blank" rel="noreferrer" className="btn-secondary shrink-0">

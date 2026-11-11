@@ -5,7 +5,7 @@ import { Suspense, type CSSProperties } from "react";
 import { Prose } from "@/components/ui";
 import { getListByToken, listItems } from "@/lib/data/wishlist";
 import type { WishItem } from "@/lib/types";
-import { giftText, giftTitle, xmasText, xmasTitle } from "./fonts";
+import { giftText, giftTitle, xmasHand, xmasText, xmasTitle } from "./fonts";
 import { ThemedWishlist } from "./themed-wishlist";
 import "./wishlist.css";
 
@@ -14,7 +14,7 @@ import "./wishlist.css";
 
 export const metadata: Metadata = { title: "Вішліст", robots: { index: false, follow: false } };
 
-const FONT_CLASSES = [xmasTitle, xmasText, giftTitle, giftText].map((f) => f.variable).join(" ");
+const FONT_CLASSES = [xmasTitle, xmasText, xmasHand, giftTitle, giftText].map((f) => f.variable).join(" ");
 
 // Подарункове оформлення: кольори коробок по черзі (фон, тінь).
 const BOXES: [string, string][] = [
@@ -24,8 +24,8 @@ const BOXES: [string, string][] = [
   ["#ffe29a", "#e8c46a"],
   ["#e3c9ff", "#c3a3ea"],
 ];
-// Новорічне: легкий нахил бирок по черзі.
-const TILTS = ["-1.2deg", "1deg", ".6deg", "-.8deg"];
+// Новорічне: марки на конвертах по черзі.
+const STAMPS = ["🎄", "⛄", "🎁", "⭐", "🦌"];
 
 function host(url: string): string {
   try {
@@ -55,7 +55,7 @@ async function PublicWishlist({ params }: { params: PageProps<"/w/[token]">["par
     <ThemedWishlist
       title={list.title}
       fontClasses={FONT_CLASSES}
-      intro={list.intro ? <div className="wl-intro"><Prose>{list.intro}</Prose></div> : <div className="wl-intro" hidden />}
+      intro={list.intro ? <div className="wl-intro"><Prose>{list.intro}</Prose></div> : null}
     >
       {items.length ? (
         <ul className="wl-list">
@@ -72,12 +72,19 @@ async function PublicWishlist({ params }: { params: PageProps<"/w/[token]">["par
 
 function WishTag({ item, index }: { item: WishItem; index: number }) {
   const [c, d] = BOXES[index % BOXES.length];
-  const style = { "--wl-c": c, "--wl-d": d, "--wl-tilt": TILTS[index % TILTS.length] } as CSSProperties;
+  const style = { "--wl-c": c, "--wl-d": d } as CSSProperties;
   return (
     <li className="wl-item" style={style}>
       <span className="wl-bow" aria-hidden>🎀</span>
       {item.priority === "high" && <span className="wl-fav" />}
+      {item.priority === "low" && <span className="wl-low" />}
+      <span className="wl-stamp" aria-hidden>{STAMPS[index % STAMPS.length]}</span>
       <div className="wl-card">
+        <div className="wl-to">
+          Дорогий Санто, хочу…
+          {item.priority === "high" && <span className="wl-mark wl-mark-high" />}
+          {item.priority === "low" && <span className="wl-mark wl-mark-low" />}
+        </div>
         <div className="wl-name">{item.title}</div>
         {item.price && <span className="wl-price">{item.price}</span>}
         {item.note && (
