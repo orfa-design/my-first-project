@@ -142,6 +142,26 @@ export const assessmentInput = assessmentFields.extend({
   needs_review: assessmentFields.shape.needs_review.default(false),
 });
 
+const optionalUrl = z
+  .string()
+  .trim()
+  .transform((v) => (v === "" ? null : v))
+  .pipe(z.url({ protocol: /^https?$/, error: "Посилання має починатися з http:// або https://" }).nullable())
+  .nullish();
+
+const wishItemFields = z.object({
+  title: z.string().trim().min(1, "Вкажіть, що хочете"),
+  url: optionalUrl,
+  price: optionalText,
+  note: optionalText,
+  priority: emptyToNull(z.enum(PRIORITIES)),
+  is_hidden: z.boolean(),
+});
+
+export const wishItemInput = wishItemFields.extend({ is_hidden: wishItemFields.shape.is_hidden.default(false) });
+export const wishItemPatch = wishItemFields.partial();
+export const wishListPatch = z.object({ title: z.string().trim().min(1, "Вкажіть назву"), intro: optionalText }).partial();
+
 export const taskPatch = taskFields.partial();
 export const classSessionPatch = classSessionFields.partial();
 export const assessmentPatch = assessmentFields.partial();
@@ -160,6 +180,9 @@ export type ClassSessionPatch = z.infer<typeof classSessionPatch>;
 export type AssessmentInput = z.infer<typeof assessmentInput>;
 export type AssessmentPatch = z.infer<typeof assessmentPatch>;
 export type ClassKind = (typeof CLASS_KINDS)[number];
+export type WishItemInput = z.infer<typeof wishItemInput>;
+export type WishItemPatch = z.infer<typeof wishItemPatch>;
+export type WishListPatch = z.infer<typeof wishListPatch>;
 export type ClassStatus = (typeof CLASS_STATUSES)[number];
 export type ChecklistItem = z.infer<typeof checklistItem>;
 

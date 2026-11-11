@@ -11,11 +11,12 @@ const LINKS = [
   { href: "/subjects", label: "Предмети" },
   { href: "/grades", label: "Оцінки" },
   { href: "/semesters", label: "Семестри" },
+  { href: "/wishlist", label: "Вішліст" },
 ];
 
 export function Nav() {
   const pathname = usePathname();
-  if (pathname === "/login") return null;
+  if (pathname === "/login" || pathname.startsWith("/w/")) return null;
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
