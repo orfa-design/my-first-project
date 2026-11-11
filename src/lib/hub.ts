@@ -18,6 +18,7 @@ import {
   updateItem,
   updateList,
 } from "./data/wishlist";
+import { withPreviewImage } from "./link-preview";
 import {
   createSemester,
   getCurrentSemester,
@@ -115,8 +116,9 @@ const HELP = `Study Hub CLI. Використання: npm run hub -- <кома�
 
   wish show                               Вішліст: назва, вступ, публічне посилання (/w/<ключ>), усі бажання
   wish add '<json>'                       Поля: title, url, price (текстом, «≈ 1500 грн»), note,
-                                          priority (low|normal|high), is_hidden
-  wish update <id> '<json>'
+                                          priority (low|normal|high), is_hidden, image_url.
+                                          Без image_url картинку-прев'ю шукає сам за url
+  wish update <id> '<json>'               Новий url — нова картинка; "image_url": null — без картинки
   wish delete <id>
   wish list-update '<json>'               Назва й вступ списку: title, intro
   wish new-link                           Новий ключ посилання — старе перестане працювати
@@ -355,9 +357,9 @@ export async function runHubCommand(argv: string[], stdin?: string): Promise<unk
         case "show":
           return { ...list, public_path: `/w/${list.share_token}`, items: await listItems(list.id, { includeHidden: true }) };
         case "add":
-          return createItem(list.id, validate(wishItemInput, readJson(a1, stdin)));
+          return createItem(list.id, await withPreviewImage(validate(wishItemInput, readJson(a1, stdin))));
         case "update":
-          return orNotFound(await updateItem(need(a1, "id"), validate(wishItemPatch, readJson(a2, stdin))), "Бажання");
+          return orNotFound(await updateItem(need(a1, "id"), await withPreviewImage(validate(wishItemPatch, readJson(a2, stdin)))), "Бажання");
         case "delete":
           await deleteItem(need(a1, "id"));
           return { deleted: a1 };

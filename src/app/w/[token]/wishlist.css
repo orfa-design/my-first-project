@@ -47,6 +47,11 @@
 .wl[data-theme="xmas"] .wl-bow, .wl[data-theme="xmas"] .wl-fav, .wl[data-theme="xmas"] .wl-low { display: none; }
 .wl[data-theme="xmas"] .wl-stamp { position: absolute; top: 16px; right: 16px; width: 56px; height: 66px; display: grid; place-items: center; font-size: 28px;
   background: #e8f1ea; border: 3px solid #fff; outline: 2px dashed #fff; outline-offset: 2px; box-shadow: 0 1px 3px #0003; transform: rotate(4deg); }
+/* З картинкою марка більша, а замість емодзі — фото товару. */
+.wl[data-theme="xmas"] .wl-stamp-img { width: 76px; height: 96px; padding: 3px; background: #fff; }
+.wl[data-theme="xmas"] .wl-item:has(.wl-stamp-img) :is(.wl-to, .wl-name, .wl-note) { padding-right: 92px; }
+.wl[data-theme="xmas"] .wl-stamp-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.wl[data-theme="xmas"] .wl-pic { display: none; }
 .wl[data-theme="xmas"] .wl-card { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 14px; }
 .wl[data-theme="xmas"] .wl-to, .wl[data-theme="xmas"] .wl-name, .wl[data-theme="xmas"] .wl-note { grid-column: 1 / -1; padding-right: 70px; }
 .wl[data-theme="xmas"] .wl-to { font-family: var(--wl-xmas-hand), cursive; font-size: 18px; color: #7a7262; }
@@ -84,6 +89,8 @@
 .wl[data-theme="gift"] .wl-item::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 16px; margin-left: -8px; background: #ffffff99; }
 .wl[data-theme="gift"] .wl-bow { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 34px; }
 .wl[data-theme="gift"] .wl-card { position: relative; background: #ffffffee; border-radius: 14px; padding: 14px; }
+.wl[data-theme="gift"] .wl-pic { margin: -4px -4px 12px; height: 150px; border-radius: 10px; background: #fff; display: grid; place-items: center; overflow: hidden; }
+.wl[data-theme="gift"] .wl-pic img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
 .wl[data-theme="gift"] .wl-name { font-weight: 800; font-size: 17px; }
 .wl[data-theme="gift"] .wl-note { color: #6f6a85; }
 .wl[data-theme="gift"] .wl-fav { position: absolute; top: 10px; right: 12px; z-index: 1; background: #fff; border-radius: 999px; padding: 3px 9px;

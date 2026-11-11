@@ -28,9 +28,14 @@ export function WishForm({ action }: { action: Action }) {
           <input name="price" className="input" placeholder="≈ 800 грн" />
         </Field>
       </div>
-      <Field label="Посилання на магазин">
-        <input name="url" type="url" className="input" placeholder="https://…" />
-      </Field>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Посилання на магазин">
+          <input name="url" type="url" className="input" placeholder="https://…" />
+        </Field>
+        <Field label="Картинка (необов'язково)">
+          <input name="image_url" type="url" className="input" placeholder="порожньо — знайду з посилання" />
+        </Field>
+      </div>
       <div className="grid gap-4 sm:grid-cols-[1fr_12rem]">
         <Field label="Коментар">
           <input name="note" className="input" placeholder="розмір M, будь-який колір…" />

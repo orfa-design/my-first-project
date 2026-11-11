@@ -125,6 +125,7 @@ export type WishItem = {
   list_id: string;
   title: string;
   url: string | null;
+  image_url: string | null;
   price: string | null;
   note: string | null;
   priority: "low" | "normal" | "high" | null;

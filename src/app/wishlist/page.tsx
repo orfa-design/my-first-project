@@ -6,7 +6,7 @@ import { Empty, Loading, PageHeader, Section } from "@/components/ui";
 import { WishForm } from "@/components/wish-form";
 import { WishCard } from "@/components/wishlist";
 import { getList, listItems } from "@/lib/data/wishlist";
-import { addWishAction, deleteWishAction, setWishHiddenAction, updateWishListAction } from "./actions";
+import { addWishAction, deleteWishAction, setWishHiddenAction, setWishImageAction, updateWishListAction } from "./actions";
 
 export const metadata: Metadata = { title: "Вішліст" };
 
@@ -73,6 +73,17 @@ async function Wishlist() {
                         {item.is_hidden ? "Показати в публічному списку" : "Приховати"}
                       </button>
                     </form>
+                    {item.image_url ? (
+                      <form action={setWishImageAction.bind(null, item.id, "remove")}>
+                        <button className="btn-secondary px-2.5 py-1 text-xs">Прибрати картинку</button>
+                      </form>
+                    ) : (
+                      item.url && (
+                        <form action={setWishImageAction.bind(null, item.id, "find")}>
+                          <button className="btn-secondary px-2.5 py-1 text-xs">Знайти картинку</button>
+                        </form>
+                      )
+                    )}
                     <form action={deleteWishAction.bind(null, item.id)}>
                       <button className="btn-danger px-2.5 py-1 text-xs">Видалити</button>
                     </form>
