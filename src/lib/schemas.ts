@@ -152,6 +152,7 @@ const optionalUrl = z
 const wishItemFields = z.object({
   title: z.string().trim().min(1, "Вкажіть, що хочете"),
   url: optionalUrl,
+  image_url: optionalUrl,
   price: optionalText,
   note: optionalText,
   priority: emptyToNull(z.enum(PRIORITIES)),

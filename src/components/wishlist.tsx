@@ -15,7 +15,12 @@ export function WishCard({ item, actions }: { item: WishItem; actions?: ReactNod
   return (
     <li className={`card p-4 ${item.is_hidden ? "opacity-50" : ""}`}>
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
-        <div className="min-w-0">
+        {item.image_url && (
+          // Зовнішня картинка магазину — звичайний <img>, без оптимізації Next.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.image_url} alt="" referrerPolicy="no-referrer" className="h-16 w-16 shrink-0 rounded border border-border bg-surface-muted object-contain" />
+        )}
+        <div className="min-w-0 flex-1">
           <div className="font-medium">
             {item.priority === "high" && <span className="mr-1.5" title="Дуже хочу">★</span>}
             {item.title}

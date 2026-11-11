@@ -78,15 +78,20 @@ function WishTag({ item, index }: { item: WishItem; index: number }) {
       <span className="wl-bow" aria-hidden>🎀</span>
       {item.priority === "high" && <span className="wl-fav" />}
       {item.priority === "low" && <span className="wl-low" />}
-      <span className="wl-stamp" aria-hidden>{STAMPS[index % STAMPS.length]}</span>
+      <span className={`wl-stamp ${item.image_url ? "wl-stamp-img" : ""}`} aria-hidden>
+        {item.image_url ? <Picture src={item.image_url} /> : STAMPS[index % STAMPS.length]}
+      </span>
       <div className="wl-card">
-        <div className="wl-to">
-          Дорогий Санто, хочу…
-          {item.priority === "high" && <span className="wl-mark wl-mark-high" />}
-          {item.priority === "low" && <span className="wl-mark wl-mark-low" />}
-        </div>
+        {item.image_url && (
+          <div className="wl-pic">
+            <Picture src={item.image_url} />
+          </div>
+        )}
+        <div className="wl-to">Дорогий Санто, хочу…</div>
         <div className="wl-name">{item.title}</div>
         {item.price && <span className="wl-price">{item.price}</span>}
+        {item.priority === "high" && <span className="wl-mark wl-mark-high">дуже хочу!</span>}
+        {item.priority === "low" && <span className="wl-mark wl-mark-low">запасний варіант</span>}
         {item.note && (
           <div className="wl-note">
             <Prose>{item.note}</Prose>
@@ -100,4 +105,10 @@ function WishTag({ item, index }: { item: WishItem; index: number }) {
       </div>
     </li>
   );
+}
+
+/** Картинка з сайту магазину — звичайний <img>: адреса зовнішня й довільна. */
+function Picture({ src }: { src: string }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt="" loading="lazy" referrerPolicy="no-referrer" />;
 }
