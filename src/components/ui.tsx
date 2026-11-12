@@ -96,7 +96,18 @@ function DueBlock({ task }: { task: DueTask }) {
   );
 }
 
-export function TaskList({ tasks, showSubject = true }: { tasks: TaskWithSubject[]; showSubject?: boolean }) {
+export function TaskList({
+  tasks,
+  showSubject = true,
+  hrefFor = (id) => `/study/tasks/${id}`,
+  readOnly = false,
+}: {
+  tasks: TaskWithSubject[];
+  showSubject?: boolean;
+  hrefFor?: (id: string) => string;
+  /** Публічний перегляд: статус лише показується, результату (оцінки) немає. */
+  readOnly?: boolean;
+}) {
   return (
     <ul className="card divide-y divide-border">
       {tasks.map((task) => (
@@ -104,10 +115,10 @@ export function TaskList({ tasks, showSubject = true }: { tasks: TaskWithSubject
         // у списку: меню статусу лежить над посиланням.
         <li key={task.id} className="relative flex flex-col gap-2 px-4 py-3 hover:bg-surface-muted sm:flex-row sm:items-center sm:gap-6">
           <div className="min-w-0 flex-1">
-            <Link href={`/study/tasks/${task.id}`} className="font-medium after:absolute after:inset-0">
+            <Link href={hrefFor(task.id)} className="font-medium after:absolute after:inset-0">
               {task.title}
             </Link>
-            {task.needs_review && (
+            {task.needs_review && !readOnly && (
               <span className="ml-2 text-xs font-normal text-warn" title="AI не впевнений у частині даних">
                 перевірити
               </span>
@@ -117,8 +128,8 @@ export function TaskList({ tasks, showSubject = true }: { tasks: TaskWithSubject
           <div className="flex items-center justify-between gap-4 sm:justify-end">
             <DueBlock task={task} />
             <div className="flex items-center gap-2 sm:w-48 sm:justify-end">
-              {task.result && <span className="text-sm text-muted">{task.result}</span>}
-              <StatusSelect taskId={task.id} status={task.status} />
+              {task.result && !readOnly && <span className="text-sm text-muted">{task.result}</span>}
+              {readOnly ? <StatusBadge status={task.status} /> : <StatusSelect taskId={task.id} status={task.status} />}
             </div>
           </div>
         </li>

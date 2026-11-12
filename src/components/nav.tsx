@@ -29,7 +29,7 @@ const SECTIONS: Section[] = [
 
 export function Nav() {
   const pathname = usePathname();
-  if (pathname === "/login" || pathname.startsWith("/w/")) return null;
+  if (pathname === "/login" || pathname.startsWith("/w/") || pathname.startsWith("/s/")) return null;
 
   const section = SECTIONS.find((s) => pathname === s.home || pathname.startsWith(s.home + "/"));
   // Посилання розділу активне на своїй сторінці й підсторінках; «головна» розділу — лише на собі.

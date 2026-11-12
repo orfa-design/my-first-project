@@ -19,6 +19,7 @@ import {
   updateList,
 } from "./data/wishlist";
 import { withPreviewImage } from "./link-preview";
+import { getShareToken, regenerateShareToken } from "./data/share";
 import type { WishItem } from "./types";
 
 /** Бажання без броней «Я беру це»: що саме обрали — сюрприз для власниці. */
@@ -129,6 +130,10 @@ const HELP = `Study Hub CLI. Використання: npm run hub -- <кома�
   wish delete <id>
   wish list-update '<json>'               Назва й вступ списку: title, intro
   wish new-link                           Новий ключ посилання — старе перестане працювати
+
+  share show                              Публічне посилання на розклад (/s/<ключ>): без пароля, лише перегляд,
+                                          без оцінок і нотаток
+  share new-link                          Новий ключ — старе посилання перестане працювати
 
   '<json>' можна замінити на "-" і передати JSON через stdin.
   create без --force відмовляє, якщо знайдено схожий запис (код виходу 2).`;
@@ -355,6 +360,17 @@ export async function runHubCommand(argv: string[], stdin?: string): Promise<unk
         case "delete":
           await deleteClass(need(a1, "id"));
           return { deleted: a1 };
+      }
+      break;
+
+    case "share":
+      switch (action) {
+        case "show": {
+          const token = orNotFound(await getShareToken("schedule"), "Посилання (застосуйте міграцію 007)");
+          return { public_path: `/s/${token}` };
+        }
+        case "new-link":
+          return { public_path: `/s/${await regenerateShareToken("schedule")}` };
       }
       break;
 

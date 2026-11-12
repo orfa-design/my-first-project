@@ -5,6 +5,8 @@ import { Suspense } from "react";
 import { ClassDay } from "@/components/classes";
 import { Empty, Loading, PageHeader } from "@/components/ui";
 import { listClasses, nextClassDate } from "@/lib/data/classes";
+import { getShareToken } from "@/lib/data/share";
+import { headers } from "next/headers";
 import { addDays, formatDate, mondayOf, todayKyiv } from "@/lib/dates";
 
 export const metadata: Metadata = { title: "Розклад" };
@@ -15,6 +17,9 @@ export default function SchedulePage({ searchParams }: PageProps<"/study/schedul
       <PageHeader title="Розклад" actions={<Link href="/study/schedule/new" className="btn-primary">+ Заняття</Link>} />
       <Suspense fallback={<Loading />}>
         <Week searchParams={searchParams} />
+      </Suspense>
+      <Suspense>
+        <ShareLink />
       </Suspense>
     </>
   );
@@ -63,5 +68,26 @@ async function Week({ searchParams }: { searchParams: PageProps<"/study/schedule
         </div>
       )}
     </>
+  );
+}
+
+/** Публічне посилання на розклад — щоб поділитися з одногрупниками чи рідними. */
+async function ShareLink() {
+  await connection();
+  const token = await getShareToken("schedule");
+  if (!token) return null;
+  const h = await headers();
+  const url = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}/s/${token}`;
+  return (
+    <details className="card mt-8 p-4 text-sm">
+      <summary className="cursor-pointer font-medium">Поділитися розкладом</summary>
+      <div className="mt-3 space-y-2">
+        <p className="text-muted">
+          Відкривається без пароля, лише для перегляду: розклад, предмети й завдання. Оцінок, нотаток і джерел там немає.
+        </p>
+        <input readOnly value={url} className="input font-mono" aria-label="Публічне посилання на розклад" />
+        <a href={url} target="_blank" rel="noreferrer" className="inline-block text-accent">Відкрити, як бачать інші ↗</a>
+      </div>
+    </details>
   );
 }
