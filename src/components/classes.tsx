@@ -47,22 +47,29 @@ export function timeRange(c: Pick<ClassSessionWithSubject, "starts_at" | "ends_a
 }
 
 /** Заняття, згруповані за днями. */
+/** Куди веде заняття і чи це публічний перегляд (без оцінок і нотаток). */
+export type ClassView = { hrefFor?: (id: string) => string; publicView?: boolean };
+
+const defaultHref = (id: string) => `/study/schedule/${id}`;
+
 export function ClassDays({
   classes,
   showSubject = true,
   currentId,
+  view,
 }: {
   classes: ClassSessionWithSubject[];
   showSubject?: boolean;
   /** Заняття, яке зараз відкрите, — підсвічується. */
   currentId?: string;
+  view?: ClassView;
 }) {
   const days = new Map<string, ClassSessionWithSubject[]>();
   for (const c of classes) days.set(c.date, [...(days.get(c.date) ?? []), c]);
   return (
     <div className="space-y-4">
       {[...days].map(([date, items]) => (
-        <ClassDay key={date} date={date} classes={items} showSubject={showSubject} currentId={currentId} />
+        <ClassDay key={date} date={date} classes={items} showSubject={showSubject} currentId={currentId} view={view} />
       ))}
     </div>
   );
@@ -73,11 +80,13 @@ export function ClassDay({
   classes,
   showSubject = true,
   currentId,
+  view,
 }: {
   date: string;
   classes: ClassSessionWithSubject[];
   showSubject?: boolean;
   currentId?: string;
+  view?: ClassView;
 }) {
   const isToday = date === todayKyiv();
   return (
@@ -89,7 +98,7 @@ export function ClassDay({
       {classes.length ? (
         <ul className="divide-y divide-border">
           {classes.map((c) => (
-            <ClassRow key={c.id} c={c} showSubject={showSubject} current={c.id === currentId} />
+            <ClassRow key={c.id} c={c} showSubject={showSubject} current={c.id === currentId} view={view} />
           ))}
         </ul>
       ) : (
@@ -103,15 +112,26 @@ export function ClassDay({
  * Одна пара — один рядок на широкому екрані: час | предмет | вид і викладач.
  * На смартфоні вид і викладач переходять під назву предмета.
  */
-function ClassRow({ c, showSubject, current }: { c: ClassSessionWithSubject; showSubject: boolean; current: boolean }) {
+function ClassRow({
+  c,
+  showSubject,
+  current,
+  view,
+}: {
+  c: ClassSessionWithSubject;
+  showSubject: boolean;
+  current: boolean;
+  view?: ClassView;
+}) {
+  const pub = view?.publicView ?? false;
   const cancelled = c.status === "cancelled";
   const struck = cancelled ? "text-muted line-through" : "";
   return (
     <li>
       <Link
-        href={`/study/schedule/${c.id}`}
+        href={(view?.hrefFor ?? defaultHref)(c.id)}
         aria-current={current ? "page" : undefined}
-        title={c.subject_closed ? "Предмет закрито — не потребує уваги" : undefined}
+        title={c.subject_closed ? (pub ? "Предмет уже закрито" : "Предмет закрито — не потребує уваги") : undefined}
         className={`${current ? "bg-accent-soft" : "hover:bg-surface-muted"} ${c.subject_closed ? "opacity-45" : ""} grid grid-cols-[5.75rem_1fr] items-baseline gap-x-3 gap-y-1 px-4 py-2.5 text-sm md:grid-cols-[6.5rem_1fr_auto] md:gap-x-4`}
       >
         <span className={`tabular-nums ${struck}`}>{timeRange(c) || <span className="text-muted">час ?</span>}</span>
@@ -121,7 +141,7 @@ function ClassRow({ c, showSubject, current }: { c: ClassSessionWithSubject; sho
         </span>
         <span className="col-start-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-muted md:col-start-3 md:flex-nowrap md:justify-end md:whitespace-nowrap">
           {showSubject && <KindBadge kind={c.kind} />}
-          {c.grade_text && (
+          {c.grade_text && !pub && (
             <span className="rounded bg-ok-soft px-1.5 py-0.5 text-xs font-medium text-ok" title="Оцінка в журналі">
               ✓ {c.grade_text}
             </span>
@@ -129,9 +149,9 @@ function ClassRow({ c, showSubject, current }: { c: ClassSessionWithSubject; sho
           {cancelled && <span className="text-danger">скасовано</span>}
           {c.teacher_name && <span>{c.teacher_name}</span>}
           {c.location && <span>· {c.location}</span>}
-          {c.needs_review && <span className="text-warn">перевірити</span>}
+          {c.needs_review && !pub && <span className="text-warn">перевірити</span>}
         </span>
-        {c.notes && (
+        {c.notes && !pub && (
           <span className="col-start-2 line-clamp-2 whitespace-pre-line text-xs text-muted md:col-end-4" title={c.notes}>
             📝 {c.notes}
           </span>

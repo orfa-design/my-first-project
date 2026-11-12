@@ -12,6 +12,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Усе, крім сторінки входу, публічного вішліста (/w/<ключ>) та статичних файлів.
-  matcher: ["/((?!login|api/hub|w/|_next/static|_next/image|favicon.ico|icon.svg).*)"],
+  // Усе, крім сторінки входу, публічних сторінок (/w/<ключ> — вішліст, /s/<ключ> — розклад) та статичних файлів.
+  matcher: ["/((?!login|api/hub|w/|s/|_next/static|_next/image|favicon.ico|icon.svg).*)"],
 };
