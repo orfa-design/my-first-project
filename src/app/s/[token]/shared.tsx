@@ -8,7 +8,6 @@ import { isScheduleToken } from "@/lib/data/share";
 import { listTasks } from "@/lib/data/tasks";
 import { todayKyiv } from "@/lib/dates";
 import { CONTROL_FORM_LABELS } from "@/lib/labels";
-import { OPEN_TASK_STATUSES } from "@/lib/schemas";
 import type { Subject } from "@/lib/types";
 
 /** Адреси публічних сторінок розкладу. */
@@ -28,7 +27,7 @@ export function PublicBadge() {
   return <span className="shrink-0 whitespace-nowrap rounded bg-surface-muted px-2 py-0.5 text-xs text-muted">лише перегляд</span>;
 }
 
-/** Про предмет для публічного перегляду: викладач, вимоги, заняття, завдання. Без оцінок і нотаток. */
+/** Про предмет для публічного перегляду: викладач, вимоги, заняття, завдання. Без оцінок, нотаток і особистих статусів. */
 export async function PublicSubjectOverview({ subject, token, currentClassId }: { subject: Subject; token: string; currentClassId?: string }) {
   const href = publicHref(token);
   const [tasks, semester, classes] = await Promise.all([
@@ -36,9 +35,6 @@ export async function PublicSubjectOverview({ subject, token, currentClassId }: 
     subject.semester_id ? getSemester(subject.semester_id) : null,
     listClasses({ subjectId: subject.id, from: todayKyiv() }),
   ]);
-  const isOpen = (s: string) => (OPEN_TASK_STATUSES as readonly string[]).includes(s);
-  const open = tasks.filter((t) => isOpen(t.status));
-  const done = tasks.filter((t) => !isOpen(t.status));
 
   const facts = [
     subject.code && ["Код", subject.code],
@@ -50,10 +46,6 @@ export async function PublicSubjectOverview({ subject, token, currentClassId }: 
 
   return (
     <>
-      {subject.is_closed && (
-        <p className="card mb-4 bg-ok-soft p-3 text-sm text-ok">✓ Предмет уже закрито (залік чи екзамен складено).</p>
-      )}
-
       {facts.length > 0 && (
         <dl className="card mb-8 grid gap-x-6 gap-y-2 p-4 text-sm sm:grid-cols-[auto_1fr]">
           {facts.map(([k, v]) => (
@@ -90,15 +82,10 @@ export async function PublicSubjectOverview({ subject, token, currentClassId }: 
         )}
       </Section>
 
-      <Section title="Завдання" count={open.length}>
-        {open.length ? <TaskList tasks={open} showSubject={false} hrefFor={href.task} readOnly /> : <Empty>Відкритих завдань немає.</Empty>}
+      {/* Усі завдання предмета одним списком за дедлайнами — без особистого статусу виконання. */}
+      <Section title="Завдання" count={tasks.length}>
+        {tasks.length ? <TaskList tasks={tasks} showSubject={false} hrefFor={href.task} readOnly /> : <Empty>Завдань немає.</Empty>}
       </Section>
-
-      {done.length > 0 && (
-        <Section title="Вже здано" count={done.length}>
-          <TaskList tasks={done} showSubject={false} hrefFor={href.task} readOnly />
-        </Section>
-      )}
 
       <p className="mt-10 text-center text-sm">
         <Link href={href.schedule()} className="text-accent">← До розкладу</Link>

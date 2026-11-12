@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { DueLabel, Loading, Prose, Section, StatusBadge } from "@/components/ui";
+import { DueLabel, Loading, Prose, Section } from "@/components/ui";
 import { getTask } from "@/lib/data/tasks";
 import { isUuid } from "@/lib/ids";
 import { PublicBadge, publicHref, requireScheduleToken } from "../../shared";
@@ -15,7 +15,7 @@ export default function PublicTaskPage({ params }: PageProps<"/s/[token]/task/[i
   );
 }
 
-/** Завдання для публічного перегляду: що зробити, до коли, як здати. Без результату, підзавдань і джерела. */
+/** Завдання для публічного перегляду: що зробити, до коли, як здати. Без статусу, результату, підзавдань і джерела. */
 async function TaskDetails({ params }: { params: PageProps<"/s/[token]/task/[id]">["params"] }) {
   await connection();
   const { token, id } = await params;
@@ -38,8 +38,7 @@ async function TaskDetails({ params }: { params: PageProps<"/s/[token]/task/[id]
       <header className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">{task.title}</h1>
         <div className="mt-2 flex flex-wrap items-center gap-3 text-sm">
-          <StatusBadge status={task.status} />
-          <DueLabel task={task} />
+          <DueLabel task={task} neutral />
         </div>
       </header>
       {task.description && (

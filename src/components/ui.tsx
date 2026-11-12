@@ -69,11 +69,12 @@ function dueTone(task: DueTask, today: string): string {
   return "text-text";
 }
 
-export function DueLabel({ task }: { task: DueTask }) {
+/** neutral — для публічних сторінок: без кольору «прострочено», бо він залежить від особистого статусу. */
+export function DueLabel({ task, neutral = false }: { task: DueTask; neutral?: boolean }) {
   if (!task.due_date) return <NoDue task={task} />;
   const today = todayKyiv();
   return (
-    <span className={`font-medium ${dueTone(task, today)}`}>
+    <span className={`font-medium ${neutral ? "text-text" : dueTone(task, today)}`}>
       {formatDate(task.due_date)}
       {task.due_time && `, ${task.due_time.slice(0, 5)}`} · {relativeDue(task.due_date, today)}
     </span>
@@ -81,10 +82,10 @@ export function DueLabel({ task }: { task: DueTask }) {
 }
 
 /** Дедлайн у списку — окремим помітним блоком: дата, під нею «через N дн.». */
-function DueBlock({ task }: { task: DueTask }) {
+function DueBlock({ task, neutral = false }: { task: DueTask; neutral?: boolean }) {
   if (!task.due_date) return <NoDue task={task} />;
   const today = todayKyiv();
-  const tone = dueTone(task, today);
+  const tone = neutral ? "text-text" : dueTone(task, today);
   return (
     <span className={`flex items-baseline gap-2 sm:flex-col sm:items-end sm:gap-0 ${tone}`}>
       <span className="font-semibold">
@@ -105,7 +106,7 @@ export function TaskList({
   tasks: TaskWithSubject[];
   showSubject?: boolean;
   hrefFor?: (id: string) => string;
-  /** Публічний перегляд: статус лише показується, результату (оцінки) немає. */
+  /** Публічний перегляд: без особистого статусу й результату, дедлайн без кольору терміновості. */
   readOnly?: boolean;
 }) {
   return (
@@ -126,11 +127,13 @@ export function TaskList({
             {showSubject && <div className="text-sm text-muted">{task.subject_name ?? "Без предмета"}</div>}
           </div>
           <div className="flex items-center justify-between gap-4 sm:justify-end">
-            <DueBlock task={task} />
-            <div className="flex items-center gap-2 sm:w-48 sm:justify-end">
-              {task.result && !readOnly && <span className="text-sm text-muted">{task.result}</span>}
-              {readOnly ? <StatusBadge status={task.status} /> : <StatusSelect taskId={task.id} status={task.status} />}
-            </div>
+            <DueBlock task={task} neutral={readOnly} />
+            {!readOnly && (
+              <div className="flex items-center gap-2 sm:w-48 sm:justify-end">
+                {task.result && <span className="text-sm text-muted">{task.result}</span>}
+                <StatusSelect taskId={task.id} status={task.status} />
+              </div>
+            )}
           </div>
         </li>
       ))}
