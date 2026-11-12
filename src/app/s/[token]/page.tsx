@@ -27,7 +27,8 @@ async function Week({ params, searchParams }: Pick<PageProps<"/s/[token]">, "par
   const anchor = weekParam && /^\d{4}-\d{2}-\d{2}$/.test(weekParam) ? weekParam : ((await nextClassDate(today)) ?? today);
   const monday = mondayOf(anchor);
   const sunday = addDays(monday, 6);
-  const classes = await listClasses({ from: monday, to: sunday });
+  // Пари закритих предметів (залік чи екзамен уже складено) іншим не цікаві — не показуємо.
+  const classes = (await listClasses({ from: monday, to: sunday })).filter((c) => !c.subject_closed);
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
   const shown = days.filter((d, i) => i < 6 || classes.some((c) => c.date === d));
 
