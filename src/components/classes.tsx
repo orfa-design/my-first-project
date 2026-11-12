@@ -40,6 +40,16 @@ function TaskBadges({ c }: { c: ClassSessionWithSubject }) {
   );
 }
 
+/** Для публічного розкладу: скільки всього завдань у предмета — без розбивки за особистим статусом. */
+function TaskCount({ c }: { c: ClassSessionWithSubject }) {
+  const total = c.subject_open_tasks + c.subject_submitted_tasks + c.subject_completed_tasks;
+  if (!total) return null;
+  // 1, 2–4 (крім 11–14) — «завдання», решта — «завдань».
+  const few = total % 10 >= 1 && total % 10 <= 4 && !(total % 100 >= 11 && total % 100 <= 14);
+  const label = few ? "завдання" : "завдань";
+  return <span className={`${badge} bg-surface-muted text-muted`}>📝 {total} {label}</span>;
+}
+
 /** «12:30–13:50», «12:30» або порожньо. */
 export function timeRange(c: Pick<ClassSessionWithSubject, "starts_at" | "ends_at">): string {
   if (!c.starts_at) return "";
@@ -137,7 +147,7 @@ function ClassRow({
         <span className={`tabular-nums ${struck}`}>{timeRange(c) || <span className="text-muted">час ?</span>}</span>
         <span className={`font-medium ${struck}`}>
           {showSubject ? (c.subject_name ?? "Без предмета") : isControlKind(c.kind) ? <KindBadge kind={c.kind} /> : CLASS_KIND_LABELS[c.kind]}
-          {showSubject && !pub && <TaskBadges c={c} />}
+          {showSubject && (pub ? <TaskCount c={c} /> : <TaskBadges c={c} />)}
         </span>
         <span className="col-start-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-muted md:col-start-3 md:flex-nowrap md:justify-end md:whitespace-nowrap">
           {showSubject && <KindBadge kind={c.kind} />}
