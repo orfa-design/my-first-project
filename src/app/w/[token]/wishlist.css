@@ -123,23 +123,27 @@
 
 /* «Я беру це»: кнопка броні, позначка «вже хтось бере» і «передумати» для того, хто взяв. */
 .wl[data-theme="xmas"] .wl-g, .wl[data-theme="gift"] .wl-x { display: none; }
-.wl .wl-take { grid-column: 1 / -1; order: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 14px; }
-.wl .wl-take-btn, .wl .wl-undo { font: inherit; cursor: pointer; }
-.wl .wl-undo { background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: 3px; font-size: 13px; }
-.wl .wl-reserved .wl-pic, .wl .wl-reserved .wl-name, .wl .wl-reserved .wl-note { opacity: .55; }
+.wl .wl-take { grid-column: 1 / -1; order: 1; margin-top: 14px; }
+/* Усі стани — однакової висоти, щоб картка не «стрибала» після натискання. */
+.wl .wl-take-btn, .wl .wl-take-mine, .wl .wl-take-other { box-sizing: border-box; height: 46px; width: 100%; display: flex; align-items: center;
+  justify-content: center; gap: 4px 12px; padding: 0 14px; font: inherit; font-size: 15px; white-space: nowrap; }
+.wl .wl-take-btn { cursor: pointer; }
+.wl .wl-undo { font: inherit; font-size: 13px; cursor: pointer; background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
+/* Бажання, яке вже взяв хтось інший, — бліде й без кольору: на ньому не варто зупинятися. */
+.wl .wl-reserved { opacity: .5; filter: grayscale(.85); box-shadow: none; }
+.wl .wl-reserved .wl-go { pointer-events: none; }
 
-.wl[data-theme="xmas"] .wl-take-btn { width: 100%; padding: 11px 16px; border: 0; border-radius: 999px; background: #b3262e; color: #fff;
-  font-weight: 700; font-size: 15px; box-shadow: 0 3px 0 #7d1a20; }
+/* Новорічне: кнопка внизу листа, під фото. */
+.wl[data-theme="xmas"] .wl-take { order: 3; margin-top: 18px; }
+.wl[data-theme="xmas"] .wl-take-btn { border: 0; border-radius: 999px; background: #b3262e; color: #fff; font-weight: 700; box-shadow: 0 3px 0 #7d1a20; }
 .wl[data-theme="xmas"] .wl-take-btn:hover { background: #c92f38; }
-.wl[data-theme="xmas"] .wl-take-mine .wl-take-note { color: #1f5c44; font-weight: 700; }
-.wl[data-theme="xmas"] .wl-undo { color: #7a7262; }
-.wl[data-theme="xmas"] .wl-take-other { justify-content: center; padding: 9px 14px; border: 2px dashed #8a8273; border-radius: 999px;
-  color: #6f685c; font-weight: 700; font-size: 14px; }
+.wl[data-theme="xmas"] .wl-take-mine { border: 2px solid #1f5c44; border-radius: 999px; color: #1f5c44; font-weight: 700; background: #1f5c4410; }
+.wl[data-theme="xmas"] .wl-undo { color: #7a7262; font-weight: 400; }
+.wl[data-theme="xmas"] .wl-take-other { border: 2px dashed #8a8273; border-radius: 999px; color: #6f685c; font-weight: 700; }
 
-.wl[data-theme="gift"] .wl-take-btn { width: 100%; padding: 10px 14px; border: 2px solid #2f2418; border-radius: 12px; background: #fff3c4;
-  color: #2f2418; font-weight: 800; font-size: 15px; box-shadow: 0 3px 0 #2f2418; }
+.wl[data-theme="gift"] .wl-take-btn { border: 2px solid #2f2418; border-radius: 12px; background: #fff3c4; color: #2f2418; font-weight: 800; box-shadow: 0 3px 0 #2f2418; }
 .wl[data-theme="gift"] .wl-take-btn:hover { background: #ffe89a; }
-.wl[data-theme="gift"] .wl-take-mine .wl-take-note { color: #3f7a4f; font-weight: 800; }
-.wl[data-theme="gift"] .wl-undo { color: #9a8670; }
-.wl[data-theme="gift"] .wl-take-other { justify-content: center; padding: 8px 12px; border-radius: 12px; background: #f4efe6;
-  color: #8b7a66; font-weight: 800; font-size: 14px; }
+.wl[data-theme="gift"] .wl-take-mine { border: 2px solid #3f7a4f; border-radius: 12px; color: #3f7a4f; font-weight: 800; background: #3f7a4f10; }
+.wl[data-theme="gift"] .wl-undo { color: #9a8670; font-weight: 400; }
+.wl[data-theme="gift"] .wl-take-other { border-radius: 12px; background: #f4efe6; color: #8b7a66; font-weight: 800; }
+.wl[data-theme="xmas"] .wl-reserved { opacity: 1; filter: grayscale(1) brightness(.62); }
