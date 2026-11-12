@@ -15,7 +15,8 @@ export default function PublicTaskPage({ params }: PageProps<"/s/[token]/task/[i
   );
 }
 
-/** Завдання для публічного перегляду: що зробити, до коли, як здати. Без статусу, результату, підзавдань і джерела. */
+/** Завдання для публічного перегляду: усе про саме завдання (опис, підзавдання, як здати, джерело) —
+ * без особистого: статусу, результату (оцінки), пріоритету й галочок «виконано» в підзавданнях. */
 async function TaskDetails({ params }: { params: PageProps<"/s/[token]/task/[id]">["params"] }) {
   await connection();
   const { token, id } = await params;
@@ -46,12 +47,33 @@ async function TaskDetails({ params }: { params: PageProps<"/s/[token]/task/[id]
           <Prose>{task.description}</Prose>
         </Section>
       )}
+      {task.checklist.length > 0 && (
+        <Section title="Що входить у завдання">
+          <ul className="card list-disc space-y-1.5 py-3 pl-9 pr-4 text-sm">
+            {task.checklist.map((item, i) => (
+              <li key={i}>{item.text}</li>
+            ))}
+          </ul>
+        </Section>
+      )}
       {task.submission_info && (
         <Section title="Як і куди здавати">
           <Prose>{task.submission_info}</Prose>
         </Section>
       )}
-      {!task.description && !task.submission_info && (
+      {(task.source_text || task.source_url) && (
+        <Section title="Джерело">
+          <div className="card space-y-2 p-4">
+            {task.source_url && (
+              <a href={task.source_url} target="_blank" rel="noreferrer" className="block break-all text-sm text-accent">
+                {task.source_url}
+              </a>
+            )}
+            {task.source_text && <Prose>{task.source_text}</Prose>}
+          </div>
+        </Section>
+      )}
+      {!task.description && !task.submission_info && !task.checklist.length && !task.source_text && !task.source_url && (
         <p className="text-sm text-muted">Деталей до цього завдання поки немає.</p>
       )}
     </article>
