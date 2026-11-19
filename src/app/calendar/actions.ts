@@ -5,6 +5,8 @@ import { requireSession } from "@/lib/auth";
 import {
   addTodo,
   createEvent,
+  updateEvent,
+  updateTodo,
   deleteEvent,
   deleteTodo,
   removePoster,
@@ -22,7 +24,8 @@ const str = (formData: FormData, key: string) => {
   return typeof v === "string" ? v : "";
 };
 
-export async function addEventAction(_prev: FormState, formData: FormData): Promise<FormState> {
+/** Подія з форми: додати (id = null) або зберегти зміни. Порожні поля очищаються. */
+export async function saveEventAction(id: string | null, _prev: FormState, formData: FormData): Promise<FormState> {
   await requireSession();
   const repeats = formData.get("repeats") === "on";
   const owner = str(formData, "owner") === "other" ? "other" : "mine";
@@ -44,7 +47,18 @@ export async function addEventAction(_prev: FormState, formData: FormData): Prom
   const poster = await posterFromFile(formData.get("poster"));
   if (poster && "error" in poster) return { error: poster.error };
 
-  const event = await createEvent(parsed.data);
+  // Усі поля форми — явно, щоб очищене поле справді очищалося (а не лишалося старе значення).
+  const data = {
+    ...parsed.data,
+    person: parsed.data.person ?? null,
+    time: parsed.data.time ?? null,
+    place: parsed.data.place ?? null,
+    note: parsed.data.note ?? null,
+    weekdays: parsed.data.weekdays ?? null,
+    repeat_until: parsed.data.repeat_until ?? null,
+  };
+  const event = id ? await updateEvent(id, data) : await createEvent(data);
+  if (!event) return { error: "Подію не знайдено" };
   if (poster) await setPoster(event.id, poster.mime, poster.data);
   refresh();
   return {};
@@ -95,6 +109,14 @@ export async function addTodoAction(formData: FormData): Promise<void> {
 export async function toggleTodoAction(id: string, done: boolean): Promise<void> {
   await requireSession();
   await setTodoDone(id, done);
+  refresh();
+}
+
+export async function updateTodoAction(id: string, formData: FormData): Promise<void> {
+  await requireSession();
+  const parsed = calTodoInput.safeParse({ title: str(formData, "title") });
+  if (!parsed.success) return;
+  await updateTodo(id, parsed.data.title);
   refresh();
 }
 

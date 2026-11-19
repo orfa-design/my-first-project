@@ -89,6 +89,11 @@ export async function setTodoDone(id: string, done: boolean): Promise<CalTodo | 
   return row ?? null;
 }
 
+export async function updateTodo(id: string, title: string): Promise<CalTodo | null> {
+  const [row] = await db()<CalTodo[]>`update cal_todos set title = ${title} where id = ${id} returning *`;
+  return row ?? null;
+}
+
 export async function deleteTodo(id: string): Promise<void> {
   await db()`delete from cal_todos where id = ${id}`;
 }

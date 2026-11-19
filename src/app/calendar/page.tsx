@@ -13,9 +13,9 @@ import {
   deleteEventAction,
   removePosterAction,
   skipOccurrenceAction,
-  toggleTodoAction,
 } from "./actions";
-import { AddEvent } from "./add-event";
+import { AddEvent, EditEvent } from "./add-event";
+import { TodoItem } from "./todo-item";
 import { calText, calTitle } from "./fonts";
 import { PosterUpload } from "./poster-upload";
 import "./calendar.css";
@@ -173,6 +173,7 @@ function EventRow({ o, today }: { o: Occurrence; today: string }) {
                 <button className="cal-link">Пропустити {dayMonthLabel(o.date)}</button>
               </form>
             )}
+            <EditEvent event={e} today={today} />
             <PosterUpload eventId={e.id} label={e.has_poster ? "Замінити афішу" : "Додати афішу"} />
             {e.has_poster && (
               <form action={removePosterAction.bind(null, e.id)}>
@@ -201,14 +202,7 @@ function Todos({ todos }: { todos: CalTodo[] }) {
       {todos.length > 0 && (
         <ul>
           {todos.map((t) => (
-            <li key={t.id} className={t.done_at ? "done" : ""}>
-              <form action={toggleTodoAction.bind(null, t.id, !t.done_at)}>
-                <button className="cal-todo" aria-pressed={Boolean(t.done_at)}>
-                  <span className="cal-box">{t.done_at ? "✓" : ""}</span>
-                  <span>{t.title}</span>
-                </button>
-              </form>
-            </li>
+            <TodoItem key={t.id} todo={t} />
           ))}
         </ul>
       )}
