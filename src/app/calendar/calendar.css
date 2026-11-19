@@ -104,3 +104,10 @@
 .cal-time b { color: var(--muted); }
 .cal-file { display: block; border: 1px dashed #c9b9a3; border-radius: 10px; background: var(--card); padding: 12px; text-align: center;
   font-size: 15px; font-weight: 600; color: var(--accent); cursor: pointer; overflow-wrap: anywhere; }
+.cal-hint-top { margin: -6px 0 0; }
+.cal-link.muted { color: var(--muted); }
+.cal-todo-row { display: flex; align-items: center; gap: 6px; }
+.cal-more-btn { flex: none; width: 36px; height: 32px; border: 0; background: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; border-radius: 8px; }
+.cal-more-btn:active { background: var(--paper); }
+.cal-todo-edit form { display: grid; gap: 8px; padding: 6px 0 10px; }
+.cal-todo-edit input { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: #fff; padding: 9px 12px; font: inherit; font-size: 16px; color: var(--ink); }
