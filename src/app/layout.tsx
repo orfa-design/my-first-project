@@ -5,7 +5,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: "Мій простір", template: "%s · Мій простір" },
-  description: "Особистий простір: навчання (Study Hub) і вішліст",
+  description: "Особистий простір: навчання (Study Hub), календар і вішліст",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
     ]);
   },
   partialPrefetching: true,
+  experimental: {
+    // Афіші до подій календаря надсилаються формою (фото з телефона зменшується до ~0,5 МБ ще в браузері).
+    serverActions: { bodySizeLimit: "4mb" },
+  },
   turbopack: {
     rules: {
       "*.css": {

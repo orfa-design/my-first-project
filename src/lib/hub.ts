@@ -20,6 +20,23 @@ import {
 } from "./data/wishlist";
 import { withPreviewImage } from "./link-preview";
 import { getShareToken, regenerateShareToken } from "./data/share";
+import {
+  addTodo,
+  createEvent,
+  deleteEvent,
+  deleteTodo,
+  getEvent,
+  listEvents,
+  listTodos,
+  removePoster,
+  setPoster,
+  setTodoDone,
+  skipOccurrence,
+  unskipOccurrence,
+  updateEvent,
+} from "./data/calendar";
+import { buildAgenda } from "./calendar";
+import { todayKyiv } from "./dates";
 import type { WishItem } from "./types";
 
 /** Бажання без броней «Я беру це»: що саме обрали — сюрприз для власниці. */
@@ -69,6 +86,9 @@ import {
   taskPatch,
   type ClassKind,
   type TaskStatus,
+  calEventInput,
+  calEventPatch,
+  calTodoInput,
 } from "./schemas";
 
 // Команди, якими AI читає й змінює дані Study Hub.
@@ -135,6 +155,20 @@ const HELP = `Study Hub CLI. Використання: npm run hub -- <кома�
                                           без оцінок і нотаток
   share new-link                          Новий ключ — старе посилання перестане працювати
 
+  cal show                                Календар як на сторінці: today, tomorrow, week (до неділі), later, past
+  cal list                                Усі події (з id)
+  cal add '<json>'                        Поля: title, date (РРРР-ММ-ДД), time ("19:30"; без часу — весь день),
+                                          place, note, owner (mine|other), person (ім'я — для owner=other),
+                                          weekdays ([1..7], 1 — пн; регулярна подія, date — з якого дня),
+                                          repeat_until (до якої дати; без — безстроково)
+  cal update <id> '<json>'
+  cal delete <id>                         Регулярну — разом з усіма повтореннями
+  cal skip <id> <РРРР-ММ-ДД>              Пропустити одне повторення регулярної події
+  cal unskip <id> <РРРР-ММ-ДД>
+  cal poster <id> -                       Афіша: у stdin — data:image/jpeg;base64,… (до 3 МБ)
+  cal poster-remove <id>
+  todo list | todo add "<текст>" | todo done <id> | todo undo <id> | todo delete <id>
+
   '<json>' можна замінити на "-" і передати JSON через stdin.
   create без --force відмовляє, якщо знайдено схожий запис (код виходу 2).`;
 
@@ -196,6 +230,11 @@ function need(value: string | undefined, what: string): string {
 function flag(flags: Record<string, string | true>, key: string): string | undefined {
   const v = flags[key];
   return typeof v === "string" ? v : undefined;
+}
+
+function validDate(value: string | undefined): string {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new HubError("Дата має бути у форматі РРРР-ММ-ДД");
+  return value;
 }
 
 function orNotFound<T>(row: T | null, what: string): T {
@@ -359,6 +398,83 @@ export async function runHubCommand(argv: string[], stdin?: string): Promise<unk
           return orNotFound(await updateClass(need(a1, "id"), validate(classSessionPatch, readJson(a2, stdin))), "Заняття");
         case "delete":
           await deleteClass(need(a1, "id"));
+          return { deleted: a1 };
+      }
+      break;
+
+    case "cal": {
+      switch (action) {
+        case "show": {
+          const today = todayKyiv();
+          const agenda = buildAgenda(await listEvents(), today);
+          const day = (d: { date: string; items: { event: Record<string, unknown>; date: string }[] }) => ({
+            date: d.date,
+            events: d.items.map(({ event: e }) => ({
+              id: e.id,
+              time: typeof e.time === "string" ? e.time.slice(0, 5) : null,
+              title: e.title,
+              person: e.person,
+              place: e.place,
+              note: e.note,
+              weekdays: e.weekdays,
+              has_poster: e.has_poster,
+            })),
+          });
+          return {
+            today: day(agenda.today),
+            tomorrow: day(agenda.tomorrow),
+            week: agenda.week.map(day),
+            later: agenda.later.map(day),
+            past: agenda.past.map(day),
+            todos: await listTodos(today),
+          };
+        }
+        case "list":
+          return listEvents();
+        case "get":
+          return orNotFound(await getEvent(need(a1, "id")), "Подію");
+        case "add": {
+          const input = validate(calEventInput, readJson(a1, stdin));
+          return createEvent(input);
+        }
+        case "update":
+          return orNotFound(await updateEvent(need(a1, "id"), validate(calEventPatch, readJson(a2, stdin))), "Подію");
+        case "delete":
+          await deleteEvent(need(a1, "id"));
+          return { deleted: a1 };
+        case "skip":
+          return orNotFound(await skipOccurrence(need(a1, "id"), validDate(a2)), "Подію");
+        case "unskip":
+          return orNotFound(await unskipOccurrence(need(a1, "id"), validDate(a2)), "Подію");
+        case "poster": {
+          const id = need(a1, "id");
+          orNotFound(await getEvent(id), "Подію");
+          const m = /^data:(image\/(?:jpeg|png|webp|gif));base64,([A-Za-z0-9+/=\s]+)$/.exec((a2 === "-" ? stdin : a2)?.trim() ?? "");
+          if (!m) throw new HubError("Очікувалось data:image/…;base64,… (JPEG, PNG, WebP чи GIF)");
+          const data = Buffer.from(m[2], "base64");
+          if (data.length > 3 * 1024 * 1024) throw new HubError("Картинка завелика — до 3 МБ");
+          await setPoster(id, m[1], data);
+          return { poster: "ok", bytes: data.length };
+        }
+        case "poster-remove":
+          await removePoster(need(a1, "id"));
+          return { poster: "removed" };
+      }
+      break;
+    }
+
+    case "todo":
+      switch (action) {
+        case "list":
+          return listTodos(todayKyiv());
+        case "add":
+          return addTodo(validate(calTodoInput, { title: need(a1, "текст справи") }).title);
+        case "done":
+          return orNotFound(await setTodoDone(need(a1, "id"), true), "Справу");
+        case "undo":
+          return orNotFound(await setTodoDone(need(a1, "id"), false), "Справу");
+        case "delete":
+          await deleteTodo(need(a1, "id"));
           return { deleted: a1 };
       }
       break;
