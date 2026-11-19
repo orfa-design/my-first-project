@@ -136,3 +136,26 @@ export type WishItem = {
   created_at: Date;
   updated_at: Date;
 };
+
+export type CalEvent = {
+  id: string;
+  title: string;
+  owner: "mine" | "other";
+  person: string | null;
+  date: string;
+  /** «19:30:00» або null — подія на весь день. */
+  time: string | null;
+  place: string | null;
+  note: string | null;
+  /** Регулярна подія: дні тижня (1 — пн … 7 — нд). */
+  weekdays: number[] | null;
+  repeat_until: string | null;
+  skipped_dates: string[];
+  has_poster: boolean;
+  /** Змінюється, коли афішу замінюють, — для адреси картинки. */
+  poster_version: string | null;
+  created_at: Date;
+  updated_at: Date;
+};
+
+export type CalTodo = { id: string; title: string; done_at: Date | null; created_at: Date };

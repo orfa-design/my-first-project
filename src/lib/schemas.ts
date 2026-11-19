@@ -192,3 +192,34 @@ export function firstIssue(error: z.ZodError): string {
   const issue = error.issues[0];
   return issue ? issue.message : "Некоректні дані";
 }
+
+// Календар.
+export const CAL_OWNERS = ["mine", "other"] as const;
+
+const calDate = z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, "Дата має бути у форматі РРРР-ММ-ДД");
+
+const calEventFields = z.object({
+  title: z.string().trim().min(1, "Вкажіть назву"),
+  owner: z.enum(CAL_OWNERS),
+  /** Ім'я людини — для подій інших людей. */
+  person: optionalText,
+  date: calDate,
+  time,
+  place: optionalText,
+  note: optionalText,
+  /** Регулярна подія: дні тижня, 1 — пн … 7 — нд. */
+  weekdays: z
+    .array(z.number().int().min(1).max(7))
+    .transform((d) => (d.length ? [...new Set(d)].sort() : null))
+    .nullish(),
+  repeat_until: isoDate,
+});
+
+export const calEventInput = calEventFields
+  .extend({ owner: calEventFields.shape.owner.default("mine") })
+  .refine((e) => e.owner !== "other" || Boolean(e.person), { message: "Вкажіть, чия це подія", path: ["person"] });
+export const calEventPatch = calEventFields.partial();
+export const calTodoInput = z.object({ title: z.string().trim().min(1, "Що треба зробити?") });
+
+export type CalEventInput = z.infer<typeof calEventInput>;
+export type CalEventPatch = z.infer<typeof calEventPatch>;

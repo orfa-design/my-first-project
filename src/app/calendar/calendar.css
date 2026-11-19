@@ -1,0 +1,106 @@
+/* Календар, оформлення «Папір»: теплий кремовий фон, заголовки із засічками, теракотовий акцент.
+   Усі правила під .cal, щоб не зачіпати решту сайту. Розраховано насамперед на телефон. */
+
+.cal {
+  --paper: #f6f1e9; --card: #fffdf8; --line: #ebe1d2; --ink: #2d2a26; --muted: #9a8c7a; --soft: #6f665b;
+  --accent: #b0553a; --other: #5b4b8a; --other-bg: #e9e3f3;
+  position: fixed; inset: 0; z-index: 20; overflow-y: auto; background: var(--paper); color: var(--ink);
+  font-family: var(--cal-text), system-ui, sans-serif; -webkit-tap-highlight-color: transparent;
+}
+.cal-wrap { max-width: 560px; margin: 0 auto; padding: 18px 18px 120px; }
+.cal h1, .cal h2 { margin: 0; }
+.cal ul { list-style: none; margin: 0; padding: 0; }
+.cal-muted { color: var(--muted); font-size: 14px; }
+.cal-small { font-size: 12px; text-align: center; margin-top: 4px; }
+
+.cal-head { margin-bottom: 4px; }
+.cal-back { display: inline-block; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 14px; }
+.cal-kicker { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.cal h1 { font-family: var(--cal-title), Georgia, serif; font-weight: 600; font-size: 34px; line-height: 1.1; margin-top: 2px; }
+
+.cal-sec { margin-top: 26px; }
+.cal-sec h2 { font-family: var(--cal-title), Georgia, serif; font-weight: 500; font-size: 21px; color: var(--accent); margin-bottom: 8px;
+  display: flex; align-items: baseline; gap: 6px; }
+.cal-sec h2 small { font-family: var(--cal-text), sans-serif; font-size: 13px; color: var(--muted); font-weight: 400; }
+
+/* Згорнуті розділи «Пізніше» і «Минулі» */
+.cal-fold > summary { list-style: none; cursor: pointer; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.cal-fold > summary::-webkit-details-marker { display: none; }
+.cal-fold > summary h2 { margin: 0; }
+.cal-fold > summary h2::after { content: "▸"; margin-left: auto; color: var(--muted); font-size: 14px; }
+.cal-fold[open] > summary { background: none; border-color: transparent; padding: 0 0 8px; }
+.cal-fold[open] > summary h2::after { content: "▾"; }
+
+/* День */
+.cal-day { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px 6px; margin-bottom: 10px; }
+.cal-day.past { opacity: .75; }
+.cal-dh { display: flex; gap: 8px; align-items: baseline; margin-bottom: 2px; }
+.cal-dow { font-weight: 700; text-transform: uppercase; font-size: 12px; color: var(--accent); letter-spacing: .06em; }
+.cal-date { font-size: 14px; color: var(--soft); }
+.cal-free { color: var(--muted); font-size: 15px; padding: 4px 0 8px; margin: 0; }
+
+/* Подія */
+.cal-ev { border-top: 1px dashed var(--line); }
+.cal-ev:first-child { border-top: 0; }
+.cal-ev summary { list-style: none; cursor: pointer; display: flex; gap: 14px; align-items: baseline; padding: 9px 0; font-size: 16px; }
+.cal-ev summary::-webkit-details-marker { display: none; }
+.cal-t { width: 46px; flex: none; font-variant-numeric: tabular-nums; font-weight: 600; }
+.cal-t.allday { font-size: 11px; font-weight: 500; color: var(--muted); line-height: 1.1; }
+.cal-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.cal-rep { margin-left: 6px; color: var(--accent); font-size: 14px; }
+.cal-who { display: inline-block; margin-right: 8px; padding: 1px 8px; border-radius: 99px; background: var(--other-bg); color: var(--other);
+  font-size: 12px; font-weight: 600; font-style: normal; }
+.cal-ev.other .cal-name { color: var(--other); font-style: italic; }
+.cal-extras { flex: none; font-size: 12px; opacity: .7; }
+.cal-more { padding: 0 0 12px 60px; display: grid; gap: 8px; font-size: 14px; color: var(--soft); }
+.cal-more p { margin: 0; }
+.cal-poster { display: block; width: 100%; max-height: 420px; object-fit: contain; border-radius: 10px; border: 1px solid var(--line); background: #fff; }
+.cal-actions { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.cal-link { background: none; border: 0; padding: 0; font: inherit; font-size: 13px; font-weight: 600; color: var(--accent); cursor: pointer; }
+.cal-link.danger { color: #a33; }
+.cal-upload { display: contents; }
+.cal-error { color: #a33; font-size: 13px; margin: 0; }
+
+/* Справи */
+.cal-todos { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+.cal-todo { display: flex; gap: 10px; align-items: center; width: 100%; padding: 6px 0; background: none; border: 0; font: inherit; font-size: 16px;
+  color: inherit; text-align: left; cursor: pointer; }
+.cal-box { flex: none; width: 22px; height: 22px; border: 2px solid #c9b9a3; border-radius: 6px; display: grid; place-items: center; font-size: 13px; color: #fff; }
+.cal-todos .done .cal-box { background: var(--accent); border-color: var(--accent); }
+.cal-todos .done .cal-todo span:last-child { text-decoration: line-through; color: var(--muted); }
+.cal-todo-add { display: flex; gap: 10px; align-items: center; margin-top: 6px; }
+.cal-todo-add input { flex: 1; min-width: 0; border: 0; border-bottom: 1px dashed var(--line); background: none; padding: 8px 0; font: inherit; font-size: 16px; color: var(--ink); outline: none; }
+.cal-todo-add input::placeholder { color: var(--accent); font-weight: 600; font-size: 15px; }
+
+/* Кнопка «+ Подія» і форма знизу */
+.cal-fab { position: fixed; z-index: 21; right: max(18px, calc(50vw - 262px)); bottom: calc(22px + env(safe-area-inset-bottom)); border: 0; cursor: pointer;
+  background: var(--ink); color: var(--paper); font: inherit; font-weight: 600; font-size: 16px; padding: 14px 20px; border-radius: 99px; box-shadow: 0 8px 20px #0003; }
+.cal-sheet-backdrop { position: fixed; inset: 0; z-index: 30; background: #2d2a2655; display: flex; align-items: flex-end; justify-content: center; }
+.cal-sheet { width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; background: var(--paper); border-radius: 20px 20px 0 0;
+  padding: 16px 18px calc(22px + env(safe-area-inset-bottom)); display: grid; gap: 12px; }
+.cal-sheet-head { display: flex; align-items: center; justify-content: space-between; }
+.cal-sheet h2 { font-family: var(--cal-title), Georgia, serif; font-weight: 600; font-size: 22px; }
+.cal-x { background: none; border: 0; font-size: 28px; line-height: 1; color: var(--muted); cursor: pointer; }
+.cal-seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 3px; }
+.cal-seg label { text-align: center; padding: 8px; border-radius: 9px; font-size: 14px; font-weight: 600; color: var(--soft); cursor: pointer; }
+.cal-seg label.on { background: var(--ink); color: var(--paper); }
+.cal-seg input { display: none; }
+.cal-field { display: grid; gap: 4px; font-size: 13px; color: var(--soft); }
+.cal-field input, .cal-field textarea { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: var(--card); padding: 10px 12px;
+  font: inherit; font-size: 16px; color: var(--ink); }
+.cal-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px; }
+.cal-hint { margin: -6px 0 0; font-size: 12px; color: var(--muted); }
+.cal-check { display: flex; gap: 8px; align-items: center; font-size: 15px; }
+.cal-days { display: flex; gap: 6px; flex-wrap: wrap; }
+.cal-days input { display: none; }
+.cal-days span { display: grid; place-items: center; width: 40px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--card);
+  font-size: 14px; font-weight: 600; color: var(--soft); cursor: pointer; }
+.cal-days input:checked + span { background: var(--accent); border-color: var(--accent); color: #fff; }
+.cal-btn { border: 0; border-radius: 12px; background: var(--ink); color: var(--paper); font: inherit; font-weight: 600; font-size: 16px; padding: 13px; cursor: pointer; }
+.cal-btn:disabled { opacity: .6; }
+.cal-time { display: flex; align-items: center; gap: 4px; }
+.cal-time select, .cal-field select { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--card); padding: 10px 8px;
+  font: inherit; font-size: 16px; color: var(--ink); }
+.cal-time b { color: var(--muted); }
+.cal-file { display: block; border: 1px dashed #c9b9a3; border-radius: 10px; background: var(--card); padding: 12px; text-align: center;
+  font-size: 15px; font-weight: 600; color: var(--accent); cursor: pointer; overflow-wrap: anywhere; }
