@@ -3,7 +3,7 @@ import { db } from "../db";
 import type { CalEventInput, CalEventPatch } from "../schemas";
 import type { CalEvent, CalTodo } from "../types";
 
-// Особистий календар: події, афіші, справи.
+// Особистий календар: події, зображення до них, справи.
 
 const columns = (sql: postgres.Sql) => sql`
   e.id, e.title, e.owner, e.person, e.date, e.time, e.place, e.note, e.weekdays, e.repeat_until,

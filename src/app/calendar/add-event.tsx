@@ -144,7 +144,7 @@ function EventSheet({ today, event, onClose }: { today: string; event?: CalEvent
           <textarea name="note" rows={2} defaultValue={event?.note ?? ""} />
         </label>
         <div className="cal-field">
-          <span>Афіша чи картинка</span>
+          <span>Зображення</span>
           <label className="cal-file">
             <input
               name="poster"
@@ -157,7 +157,7 @@ function EventSheet({ today, event, onClose }: { today: string; event?: CalEvent
                 setPosterName(input.files?.[0]?.name ?? "");
               }}
             />
-            {posterName ? `🖼 ${posterName}` : event?.has_poster ? "Замінити афішу" : "Обрати фото"}
+            {posterName ? `🖼 ${posterName}` : event?.has_poster ? "Замінити зображення" : "Обрати фото"}
           </label>
         </div>
 

@@ -165,7 +165,7 @@ const HELP = `Study Hub CLI. Використання: npm run hub -- <кома�
   cal delete <id>                         Регулярну — разом з усіма повтореннями
   cal skip <id> <РРРР-ММ-ДД>              Пропустити одне повторення регулярної події
   cal unskip <id> <РРРР-ММ-ДД>
-  cal poster <id> -                       Афіша: у stdin — data:image/jpeg;base64,… (до 3 МБ)
+  cal poster <id> -                       Зображення (обкладинка, фото): у stdin — data:image/jpeg;base64,… (до 3 МБ)
   cal poster-remove <id>
   todo list | todo add "<текст>" | todo done <id> | todo undo <id> | todo delete <id>
 

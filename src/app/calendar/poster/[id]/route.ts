@@ -2,7 +2,7 @@ import { requireSession } from "@/lib/auth";
 import { getPoster } from "@/lib/data/calendar";
 import { isUuid } from "@/lib/ids";
 
-// Афіша події. Сторінка за паролем (proxy), тут — друга перевірка.
+// Зображення події (обкладинка, фото). Сторінка за паролем (proxy), тут — друга перевірка.
 export async function GET(_request: Request, { params }: RouteContext<"/calendar/poster/[id]">) {
   await requireSession();
   const { id } = await params;
