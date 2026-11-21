@@ -16,6 +16,7 @@ import {
 } from "./actions";
 import { AddEvent, EditEvent } from "./add-event";
 import { Fold } from "./fold";
+import { NextUp, TodayList } from "./today";
 import { TodoItem } from "./todo-item";
 import { calText, calTitle } from "./fonts";
 import { PosterUpload } from "./poster-upload";
@@ -54,11 +55,17 @@ async function Calendar() {
         <Link href="/" className="cal-back">← Усі розділи</Link>
         <div className="cal-kicker">{longDate.format(new Date(`${today}T00:00:00Z`))}</div>
         <h1>Мій календар</h1>
+        <NextUp
+          today={today}
+          items={agenda.today.items
+            .filter((o) => o.event.time)
+            .map((o) => ({ time: o.event.time!.slice(0, 5), title: o.event.title }))}
+        />
       </header>
 
       <section className="cal-sec">
         <h2>Сьогодні</h2>
-        <Day day={agenda.today} today={today} emptyText="Вільний день ✨" />
+        <Day day={agenda.today} today={today} emptyText="Вільний день ✨" live />
       </section>
 
       <Todos todos={todos} />
@@ -120,17 +127,42 @@ function plural(n: number): string {
   return n % 10 === 1 && n % 100 !== 11 ? "подія" : few ? "події" : "подій";
 }
 
-function Day({ day, today, emptyText, past = false }: { day: AgendaDay; today: string; emptyText?: string; past?: boolean }) {
+function Day({
+  day,
+  today,
+  emptyText,
+  past = false,
+  live = false,
+}: {
+  day: AgendaDay;
+  today: string;
+  emptyText?: string;
+  past?: boolean;
+  /** Сьогоднішній день: лінія «зараз» і стан подій (минула / триває). */
+  live?: boolean;
+}) {
   return (
     <div className={`cal-day ${past ? "past" : ""}`}>
       <div className="cal-dh">
         <span className="cal-dow">{weekdayShort(day.date)}</span>
         <span className="cal-date">{dayMonthLabel(day.date)}</span>
       </div>
-      {day.items.length ? (
+      {day.items.length && live ? (
+        <TodayList
+          today={today}
+          items={day.items.map((o) => ({
+            key: `${o.event.id}-${o.date}`,
+            time: o.event.time ? o.event.time.slice(0, 5) : null,
+            title: o.event.title,
+            node: <EventRow o={o} today={today} />,
+          }))}
+        />
+      ) : day.items.length ? (
         <ul>
           {day.items.map((o) => (
-            <EventRow key={`${o.event.id}-${o.date}`} o={o} today={today} />
+            <li key={`${o.event.id}-${o.date}`} className="cal-slot">
+              <EventRow o={o} today={today} />
+            </li>
           ))}
         </ul>
       ) : (
@@ -145,7 +177,7 @@ function EventRow({ o, today }: { o: Occurrence; today: string }) {
   const e = o.event;
   const extras = [e.place && "📍", e.note && "💬", e.has_poster && "🖼"].filter(Boolean).join(" ");
   return (
-    <li className={`cal-ev ${e.owner}`}>
+    <div className={`cal-ev ${e.owner}`}>
       <details>
         <summary>
           <span className={`cal-t ${e.time ? "" : "allday"}`}>{e.time ? e.time.slice(0, 5) : "весь день"}</span>
@@ -196,7 +228,7 @@ function EventRow({ o, today }: { o: Occurrence; today: string }) {
           </div>
         </div>
       </details>
-    </li>
+    </div>
   );
 }
 
