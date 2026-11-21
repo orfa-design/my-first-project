@@ -152,7 +152,7 @@ export type CalEvent = {
   repeat_until: string | null;
   skipped_dates: string[];
   has_poster: boolean;
-  /** Змінюється, коли афішу замінюють, — для адреси картинки. */
+  /** Змінюється, коли зображення замінюють, — для адреси картинки. */
   poster_version: string | null;
   created_at: Date;
   updated_at: Date;

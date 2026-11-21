@@ -15,6 +15,7 @@ import {
   skipOccurrenceAction,
 } from "./actions";
 import { AddEvent, EditEvent } from "./add-event";
+import { Fold } from "./fold";
 import { TodoItem } from "./todo-item";
 import { calText, calTitle } from "./fonts";
 import { PosterUpload } from "./poster-upload";
@@ -76,12 +77,14 @@ async function Calendar() {
         </section>
       )}
 
-      <details className="cal-sec cal-fold">
-        <summary>
+      <Fold
+        id="later"
+        summary={
           <h2>
             Пізніше <small>· {laterCount ? `${laterCount} ${plural(laterCount)}` : "порожньо"}</small>
           </h2>
-        </summary>
+        }
+      >
         {agenda.later.length ? (
           agenda.later.map((d) => <Day key={d.date} day={d} today={today} />)
         ) : (
@@ -90,20 +93,22 @@ async function Calendar() {
         {agenda.later.some((d) => d.items.some((o) => o.event.weekdays)) && (
           <p className="cal-muted cal-small">Регулярні події тут — лише найближчий повтор.</p>
         )}
-      </details>
+      </Fold>
 
-      <details className="cal-sec cal-fold">
-        <summary>
+      <Fold
+        id="past"
+        summary={
           <h2>
             Минулі події <small>· {pastCount}</small>
           </h2>
-        </summary>
+        }
+      >
         {agenda.past.length ? (
           agenda.past.map((d) => <Day key={d.date} day={d} today={today} past />)
         ) : (
           <p className="cal-muted">Минулих подій ще немає.</p>
         )}
-      </details>
+      </Fold>
 
       <AddEvent today={today} />
     </>
@@ -135,7 +140,7 @@ function Day({ day, today, emptyText, past = false }: { day: AgendaDay; today: s
   );
 }
 
-/** Подія: рядок «час — назва»; натиснути — розгорнуться місце, нотатка, афіша й дії. */
+/** Подія: рядок «час — назва»; натиснути — розгорнуться місце, нотатка, зображення й дії. */
 function EventRow({ o, today }: { o: Occurrence; today: string }) {
   const e = o.event;
   const extras = [e.place && "📍", e.note && "💬", e.has_poster && "🖼"].filter(Boolean).join(" ");
@@ -164,7 +169,7 @@ function EventRow({ o, today }: { o: Occurrence; today: string }) {
             <a href={`/calendar/poster/${e.id}?v=${e.poster_version}`} target="_blank" rel="noreferrer">
               {/* Картинка з бази, а не з зовнішнього сайту. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="cal-poster" src={`/calendar/poster/${e.id}?v=${e.poster_version}`} alt={`Афіша: ${e.title}`} loading="lazy" />
+              <img className="cal-poster" src={`/calendar/poster/${e.id}?v=${e.poster_version}`} alt={e.title} loading="lazy" />
             </a>
           )}
           <div className="cal-actions">
@@ -174,10 +179,10 @@ function EventRow({ o, today }: { o: Occurrence; today: string }) {
               </form>
             )}
             <EditEvent event={e} today={today} />
-            <PosterUpload eventId={e.id} label={e.has_poster ? "Замінити афішу" : "Додати афішу"} />
+            <PosterUpload eventId={e.id} label={e.has_poster ? "Замінити зображення" : "Додати зображення"} />
             {e.has_poster && (
               <form action={removePosterAction.bind(null, e.id)}>
-                <button className="cal-link">Прибрати афішу</button>
+                <button className="cal-link">Прибрати зображення</button>
               </form>
             )}
             <form action={deleteEventAction.bind(null, e.id)}>

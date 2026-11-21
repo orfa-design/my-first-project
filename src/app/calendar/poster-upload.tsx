@@ -5,7 +5,7 @@ import type { FormState } from "@/lib/form";
 import { setPosterAction } from "./actions";
 import { shrinkInputFile } from "./shrink-image";
 
-/** «Додати афішу» до наявної події: вибір фото одразу його й завантажує. */
+/** «Додати зображення» до наявної події: вибір фото одразу його й завантажує. */
 export function PosterUpload({ eventId, label }: { eventId: string; label: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(setPosterAction.bind(null, eventId), {});
   const formRef = useRef<HTMLFormElement>(null);
