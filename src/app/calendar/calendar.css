@@ -40,8 +40,8 @@
 .cal-free { color: var(--muted); font-size: 15px; padding: 4px 0 8px; margin: 0; }
 
 /* Подія */
-.cal-ev { border-top: 1px dashed var(--line); }
-.cal-ev:first-child { border-top: 0; }
+.cal-slot { position: relative; }
+.cal-slot + .cal-slot { border-top: 1px dashed var(--line); }
 .cal-ev summary { list-style: none; cursor: pointer; display: flex; gap: 14px; align-items: baseline; padding: 9px 0; font-size: 16px; }
 .cal-ev summary::-webkit-details-marker { display: none; }
 .cal-t { width: 46px; flex: none; font-variant-numeric: tabular-nums; font-weight: 600; }
@@ -111,3 +111,17 @@
 .cal-more-btn:active { background: var(--paper); }
 .cal-todo-edit form { display: grid; gap: 8px; padding: 6px 0 10px; }
 .cal-todo-edit input { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: #fff; padding: 9px 12px; font: inherit; font-size: 16px; color: var(--ink); }
+
+/* Сьогодні: лінія «зараз», минулі події блякнуть, щойно почата — «триває». */
+.cal-now { display: flex; align-items: center; gap: 8px; margin: 2px 0; color: var(--accent); font-size: 12px; font-weight: 600; }
+.cal-now::before, .cal-now::after { content: ""; height: 2px; background: var(--accent); border-radius: 2px; }
+.cal-now::before { width: 10px; }
+.cal-now::after { flex: 1; }
+.cal-now span { font-variant-numeric: tabular-nums; }
+.cal-slot.past > .cal-ev > details:not([open]) > summary { opacity: .42; }
+.cal-slot.live > .cal-ev > details > summary .cal-t { color: var(--accent); }
+.cal-slot.live > .cal-ev > details > summary { padding-right: 64px; }
+.cal-live { position: absolute; top: 10px; right: 0; padding: 1px 8px; border-radius: 99px; background: var(--accent); color: #fff;
+  font-size: 11px; font-weight: 700; pointer-events: none; }
+.cal-next { margin: 8px 0 0; font-size: 14px; color: var(--soft); }
+.cal-next b { color: var(--ink); font-weight: 600; }
