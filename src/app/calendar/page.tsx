@@ -175,7 +175,7 @@ function Day({
 /** Подія: рядок «час — назва»; натиснути — розгорнуться місце, нотатка, зображення й дії. */
 function EventRow({ o, today }: { o: Occurrence; today: string }) {
   const e = o.event;
-  const extras = [e.place && "📍", e.note && "💬", e.has_poster && "🖼"].filter(Boolean).join(" ");
+  const extras = [e.place && "📍", e.note && "💬", e.url && "🔗", e.has_poster && "🖼"].filter(Boolean).join(" ");
   return (
     <div className={`cal-ev ${e.owner}`}>
       <details>
@@ -197,6 +197,11 @@ function EventRow({ o, today }: { o: Occurrence; today: string }) {
           )}
           {e.place && <p>📍 {e.place}</p>}
           {e.note && <Prose>{e.note}</Prose>}
+          {e.url && (
+            <a href={e.url} target="_blank" rel="noreferrer" className="cal-url">
+              Сторінка події ↗
+            </a>
+          )}
           {e.has_poster && (
             <a href={`/calendar/poster/${e.id}?v=${e.poster_version}`} target="_blank" rel="noreferrer">
               {/* Картинка з бази, а не з зовнішнього сайту. */}

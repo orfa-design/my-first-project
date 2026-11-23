@@ -140,6 +140,10 @@ function EventSheet({ today, event, onClose }: { today: string; event?: CalEvent
           <input name="place" autoComplete="off" defaultValue={event?.place ?? ""} />
         </label>
         <label className="cal-field">
+          <span>Посилання (квитки, сторінка події)</span>
+          <input name="url" type="url" inputMode="url" placeholder="https://…" autoComplete="off" defaultValue={event?.url ?? ""} />
+        </label>
+        <label className="cal-field">
           <span>Нотатка</span>
           <textarea name="note" rows={2} defaultValue={event?.note ?? ""} />
         </label>
