@@ -38,6 +38,7 @@ export async function saveEventAction(id: string | null, _prev: FormState, formD
     time: str(formData, "hour") ? `${str(formData, "hour")}:${str(formData, "minute") || "00"}` : "",
     place: str(formData, "place"),
     note: str(formData, "note"),
+    url: str(formData, "url"),
     weekdays: repeats ? formData.getAll("weekdays").map(Number) : null,
     repeat_until: repeats ? str(formData, "repeat_until") : "",
   });
@@ -54,6 +55,7 @@ export async function saveEventAction(id: string | null, _prev: FormState, formD
     time: parsed.data.time ?? null,
     place: parsed.data.place ?? null,
     note: parsed.data.note ?? null,
+    url: parsed.data.url ?? null,
     weekdays: parsed.data.weekdays ?? null,
     repeat_until: parsed.data.repeat_until ?? null,
   };

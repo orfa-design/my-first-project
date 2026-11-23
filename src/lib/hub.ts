@@ -36,6 +36,7 @@ import {
   updateEvent,
 } from "./data/calendar";
 import { buildAgenda } from "./calendar";
+import { downloadImage, readPage } from "./page-info";
 import { todayKyiv } from "./dates";
 import type { WishItem } from "./types";
 
@@ -158,7 +159,7 @@ const HELP = `Study Hub CLI. Використання: npm run hub -- <кома�
   cal show                                Календар як на сторінці: today, tomorrow, week (до неділі), later, past
   cal list                                Усі події (з id)
   cal add '<json>'                        Поля: title, date (РРРР-ММ-ДД), time ("19:30"; без часу — весь день),
-                                          place, note, owner (mine|other), person (ім'я — для owner=other),
+                                          place, note, url (сторінка події), owner (mine|other), person (ім'я — для owner=other),
                                           weekdays ([1..7], 1 — пн; регулярна подія, date — з якого дня),
                                           repeat_until (до якої дати; без — безстроково)
   cal update <id> '<json>'
@@ -167,6 +168,9 @@ const HELP = `Study Hub CLI. Використання: npm run hub -- <кома�
   cal unskip <id> <РРРР-ММ-ДД>
   cal poster <id> -                       Зображення (обкладинка, фото): у stdin — data:image/jpeg;base64,… (до 3 МБ)
   cal poster-remove <id>
+  cal link <url>                          Прочитати сторінку події (через сайт): title, description, image,
+                                          events (з JSON-LD: name, startDate, endDate, place, address, price)
+  cal poster-url <id> <url зображення>    Завантажити зображення за адресою (велике — зменшується)
   todo list | todo add "<текст>" | todo done <id> | todo undo <id> | todo delete <id>
 
   '<json>' можна замінити на "-" і передати JSON через stdin.
@@ -455,6 +459,20 @@ export async function runHubCommand(argv: string[], stdin?: string): Promise<unk
           if (data.length > 3 * 1024 * 1024) throw new HubError("Картинка завелика — до 3 МБ");
           await setPoster(id, m[1], data);
           return { poster: "ok", bytes: data.length };
+        }
+        case "link":
+          // Сторінка події: назва, опис, зображення, дата/час/місце з JSON-LD — щоб створити подію за посиланням.
+          return readPage(validate(z.url({ protocol: /^https?$/ }), need(a1, "посилання"))).catch((err: Error) => {
+            throw new HubError(`Не вдалося прочитати сторінку: ${err.message}`);
+          });
+        case "poster-url": {
+          const id = need(a1, "id");
+          orNotFound(await getEvent(id), "Подію");
+          const image = await downloadImage(validate(z.url({ protocol: /^https?$/ }), need(a2, "адресу зображення"))).catch((err: Error) => {
+            throw new HubError(`Не вдалося завантажити зображення: ${err.message}`);
+          });
+          await setPoster(id, image.mime, image.data);
+          return { poster: "ok", mime: image.mime, bytes: image.data.length };
         }
         case "poster-remove":
           await removePoster(need(a1, "id"));

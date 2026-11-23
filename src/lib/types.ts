@@ -147,6 +147,8 @@ export type CalEvent = {
   time: string | null;
   place: string | null;
   note: string | null;
+  /** Сторінка події (квитки, афіша). */
+  url: string | null;
   /** Регулярна подія: дні тижня (1 — пн … 7 — нд). */
   weekdays: number[] | null;
   repeat_until: string | null;

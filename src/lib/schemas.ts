@@ -207,6 +207,8 @@ const calEventFields = z.object({
   time,
   place: optionalText,
   note: optionalText,
+  /** Сторінка події (квитки, афіша). */
+  url: optionalUrl,
   /** Регулярна подія: дні тижня, 1 — пн … 7 — нд. */
   weekdays: z
     .array(z.number().int().min(1).max(7))
