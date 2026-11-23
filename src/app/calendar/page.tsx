@@ -9,7 +9,6 @@ import { listEvents, listTodos } from "@/lib/data/calendar";
 import { todayKyiv } from "@/lib/dates";
 import type { CalTodo } from "@/lib/types";
 import {
-  addTodoAction,
   deleteEventAction,
   removePosterAction,
   skipOccurrenceAction,
@@ -17,6 +16,7 @@ import {
 import { AddEvent, EditEvent } from "./add-event";
 import { Fold } from "./fold";
 import { NextUp, TodayList } from "./today";
+import { TodoAdd } from "./todo-add";
 import { TodoItem } from "./todo-item";
 import { calText, calTitle } from "./fonts";
 import { PosterUpload } from "./poster-upload";
@@ -248,10 +248,7 @@ function Todos({ todos }: { todos: CalTodo[] }) {
           ))}
         </ul>
       )}
-      <form action={addTodoAction} className="cal-todo-add">
-        <input name="title" placeholder="+ додати справу" aria-label="Нова справа" autoComplete="off" required />
-        <button className="cal-link">Додати</button>
-      </form>
+      <TodoAdd />
     </section>
   );
 }

@@ -78,9 +78,19 @@ export async function listTodos(today: string): Promise<CalTodo[]> {
     order by (done_at is not null), created_at`;
 }
 
+/** Нова справа. Та сама справа, надіслана повторно за кілька секунд (подвійне натискання), не дублюється. */
 export async function addTodo(title: string): Promise<CalTodo> {
-  const [row] = await db()<CalTodo[]>`insert into cal_todos (title) values (${title}) returning *`;
-  return row;
+  // Блокування на час транзакції: два одночасні запити з тим самим текстом ідуть по черзі.
+  return db().begin(async (tx) => {
+    await tx`select pg_advisory_xact_lock(hashtext(${"cal_todo:" + title}))`;
+    const [recent] = await tx<CalTodo[]>`
+      select * from cal_todos
+      where title = ${title} and done_at is null and created_at > now() - interval '10 seconds'
+      order by created_at desc limit 1`;
+    if (recent) return recent;
+    const [row] = await tx<CalTodo[]>`insert into cal_todos (title) values (${title}) returning *`;
+    return row;
+  });
 }
 
 export async function setTodoDone(id: string, done: boolean): Promise<CalTodo | null> {
