@@ -219,7 +219,8 @@ function EventRow({ o, today }: { o: Occurrence; today: string }) {
               {e.end_time ? `, ${e.end_time.slice(0, 5)}` : ""}
             </p>
           )}
-          {e.place && (
+          {e.place && e.place_no_map && <p>📍 {e.place}</p>}
+          {e.place && !e.place_no_map && (
             <a href={mapsUrl(e.place)} target="_blank" rel="noreferrer" className="cal-map">
               📍 {e.place} <span>на мапі ↗</span>
             </a>

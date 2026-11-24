@@ -206,6 +206,8 @@ const calEventFields = z.object({
   date: calDate,
   time,
   place: optionalText,
+  /** Місце — не адреса («на кухні»): без посилання на карту. */
+  place_no_map: z.boolean(),
   note: optionalText,
   /** Сторінка події (квитки, афіша). */
   url: optionalUrl,
@@ -221,7 +223,7 @@ const calEventFields = z.object({
 });
 
 export const calEventInput = calEventFields
-  .extend({ owner: calEventFields.shape.owner.default("mine") })
+  .extend({ owner: calEventFields.shape.owner.default("mine"), place_no_map: calEventFields.shape.place_no_map.default(false) })
   .refine((e) => e.owner !== "other" || Boolean(e.person), { message: "Вкажіть, чия це подія", path: ["person"] })
   .refine((e) => !e.end_date || e.end_date >= e.date, { message: "Кінцева дата не може бути раніше за початок", path: ["end_date"] })
   .refine((e) => !(e.end_date && e.weekdays), { message: "Подія не може бути водночас регулярною і на кілька днів", path: ["end_date"] });

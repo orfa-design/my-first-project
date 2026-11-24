@@ -187,6 +187,10 @@ function EventSheet({ today, event, onClose }: { today: string; event?: CalEvent
           <span>Місце</span>
           <input name="place" autoComplete="off" defaultValue={event?.place ?? ""} />
         </label>
+        <label className="cal-check cal-check-small">
+          <input type="checkbox" name="place_no_map" defaultChecked={event?.place_no_map} />
+          Без посилання на мапу (це не адреса: «на кухні», «вдома»)
+        </label>
         <label className="cal-field">
           <span>Посилання (квитки, сторінка події)</span>
           <input name="url" type="url" inputMode="url" placeholder="https://…" autoComplete="off" defaultValue={event?.url ?? ""} />
