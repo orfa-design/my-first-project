@@ -28,6 +28,8 @@ const str = (formData: FormData, key: string) => {
 export async function saveEventAction(id: string | null, _prev: FormState, formData: FormData): Promise<FormState> {
   await requireSession();
   const repeats = formData.get("repeats") === "on";
+  const multiday = !repeats && formData.get("multiday") === "on";
+  const hm = (h: string, m: string) => (str(formData, h) ? `${str(formData, h)}:${str(formData, m) || "00"}` : "");
   const owner = str(formData, "owner") === "other" ? "other" : "mine";
   const parsed = calEventInput.safeParse({
     title: str(formData, "title"),
@@ -41,9 +43,12 @@ export async function saveEventAction(id: string | null, _prev: FormState, formD
     url: str(formData, "url"),
     weekdays: repeats ? formData.getAll("weekdays").map(Number) : null,
     repeat_until: repeats ? str(formData, "repeat_until") : "",
+    end_date: multiday ? str(formData, "end_date") : "",
+    end_time: multiday ? hm("end_hour", "end_minute") : "",
   });
   if (!parsed.success) return { error: firstIssue(parsed.error) };
   if (repeats && !parsed.data.weekdays) return { error: "Оберіть дні тижня, у які подія повторюється" };
+  if (multiday && !parsed.data.end_date) return { error: "Вкажіть, до якої дати триває подія" };
 
   const poster = await posterFromFile(formData.get("poster"));
   if (poster && "error" in poster) return { error: poster.error };
@@ -58,6 +63,8 @@ export async function saveEventAction(id: string | null, _prev: FormState, formD
     url: parsed.data.url ?? null,
     weekdays: parsed.data.weekdays ?? null,
     repeat_until: parsed.data.repeat_until ?? null,
+    end_date: parsed.data.end_date ?? null,
+    end_time: parsed.data.end_time ?? null,
   };
   const event = id ? await updateEvent(id, data) : await createEvent(data);
   if (!event) return { error: "Подію не знайдено" };

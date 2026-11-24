@@ -161,7 +161,8 @@ const HELP = `Study Hub CLI. Використання: npm run hub -- <кома�
   cal add '<json>'                        Поля: title, date (РРРР-ММ-ДД), time ("19:30"; без часу — весь день),
                                           place, note, url (сторінка події), owner (mine|other), person (ім'я — для owner=other),
                                           weekdays ([1..7], 1 — пн; регулярна подія, date — з якого дня),
-                                          repeat_until (до якої дати; без — безстроково)
+                                          repeat_until (до якої дати; без — безстроково),
+                                          end_date, end_time (подія на кілька днів: до якої дати включно й до котрої)
   cal update <id> '<json>'
   cal delete <id>                         Регулярну — разом з усіма повтореннями
   cal skip <id> <РРРР-ММ-ДД>              Пропустити одне повторення регулярної події

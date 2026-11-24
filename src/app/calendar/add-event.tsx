@@ -39,6 +39,8 @@ export function EditEvent({ event, today }: { event: CalEvent; today: string }) 
 function EventSheet({ today, event, onClose }: { today: string; event?: CalEvent; onClose: () => void }) {
   const [owner, setOwner] = useState<"mine" | "other">(event?.owner ?? "mine");
   const [repeats, setRepeats] = useState(Boolean(event?.weekdays));
+  const [multiday, setMultiday] = useState(Boolean(event?.end_date));
+  const [endHour, endMinute] = event?.end_time ? event.end_time.split(":") : ["", "00"];
   const [posterName, setPosterName] = useState("");
   const [state, action, pending] = useActionState<FormState, FormData>(saveEventAction.bind(null, event?.id ?? null), {});
   const submitted = useRef(false);
@@ -115,7 +117,53 @@ function EventSheet({ today, event, onClose }: { today: string; event?: CalEvent
         <p className="cal-hint">Без часу — подія на весь день.</p>
 
         <label className="cal-check">
-          <input type="checkbox" name="repeats" checked={repeats} onChange={(e) => setRepeats(e.target.checked)} />
+          <input
+            type="checkbox"
+            name="multiday"
+            checked={multiday}
+            onChange={(e) => {
+              setMultiday(e.target.checked);
+              if (e.target.checked) setRepeats(false);
+            }}
+          />
+          На кілька днів (поїздка, відпустка)
+        </label>
+        {multiday && (
+          <div className="cal-row">
+            <label className="cal-field">
+              <span>До якої дати</span>
+              <input name="end_date" type="date" required defaultValue={event?.end_date ?? ""} />
+            </label>
+            <div className="cal-field">
+              <span>Час завершення</span>
+              <div className="cal-time">
+                <select name="end_hour" aria-label="Година завершення" defaultValue={endHour}>
+                  <option value="">—</option>
+                  {HOURS.map((h) => (
+                    <option key={h}>{h}</option>
+                  ))}
+                </select>
+                <b>:</b>
+                <select name="end_minute" aria-label="Хвилини завершення" defaultValue={endMinute}>
+                  {(MINUTES.includes(endMinute) ? MINUTES : [...MINUTES, endMinute].sort()).map((m) => (
+                    <option key={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <label className="cal-check">
+          <input
+            type="checkbox"
+            name="repeats"
+            checked={repeats}
+            onChange={(e) => {
+              setRepeats(e.target.checked);
+              if (e.target.checked) setMultiday(false);
+            }}
+          />
           Повторюється щотижня
         </label>
         {repeats && (

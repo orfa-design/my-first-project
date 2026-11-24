@@ -6,7 +6,7 @@ import type { CalEvent, CalTodo } from "../types";
 // Особистий календар: події, зображення до них, справи.
 
 const columns = (sql: postgres.Sql) => sql`
-  e.id, e.title, e.owner, e.person, e.date, e.time, e.place, e.note, e.url, e.weekdays, e.repeat_until,
+  e.id, e.title, e.owner, e.person, e.date, e.time, e.place, e.note, e.url, e.weekdays, e.repeat_until, e.end_date, e.end_time,
   e.skipped_dates::text[] as skipped_dates,
   exists (select 1 from cal_posters p where p.event_id = e.id) as has_poster,
   (select extract(epoch from p.updated_at)::bigint::text from cal_posters p where p.event_id = e.id) as poster_version,
