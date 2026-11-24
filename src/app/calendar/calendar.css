@@ -126,3 +126,10 @@
 .cal-next { margin: 8px 0 0; font-size: 14px; color: var(--soft); }
 .cal-next b { color: var(--ink); font-weight: 600; }
 .cal-url { justify-self: start; font-weight: 600; color: var(--accent); text-decoration: none; border-bottom: 1px solid #b0553a55; }
+
+/* Події на кілька днів і посилання на карту */
+.cal-range { margin-left: 8px; padding: 1px 7px; border-radius: 99px; background: #f1e4d8; color: var(--accent); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.cal-ongoing { margin: 0 0 10px; padding: 10px 14px; border-radius: 12px; background: #f1e4d8; color: var(--ink); font-size: 14px; }
+.cal-ongoing b { font-weight: 600; }
+.cal-map { justify-self: start; color: var(--soft); text-decoration: none; }
+.cal-map span { margin-left: 4px; font-size: 12px; font-weight: 600; color: var(--accent); }

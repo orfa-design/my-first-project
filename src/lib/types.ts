@@ -152,6 +152,9 @@ export type CalEvent = {
   /** Регулярна подія: дні тижня (1 — пн … 7 — нд). */
   weekdays: number[] | null;
   repeat_until: string | null;
+  /** Подія на кілька днів: кінцева дата (включно) і час завершення. */
+  end_date: string | null;
+  end_time: string | null;
   skipped_dates: string[];
   has_poster: boolean;
   /** Змінюється, коли зображення замінюють, — для адреси картинки. */

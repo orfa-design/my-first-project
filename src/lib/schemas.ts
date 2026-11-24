@@ -215,11 +215,16 @@ const calEventFields = z.object({
     .transform((d) => (d.length ? [...new Set(d)].sort() : null))
     .nullish(),
   repeat_until: isoDate,
+  /** Подія на кілька днів: кінцева дата (включно) і час завершення. */
+  end_date: isoDate,
+  end_time: time,
 });
 
 export const calEventInput = calEventFields
   .extend({ owner: calEventFields.shape.owner.default("mine") })
-  .refine((e) => e.owner !== "other" || Boolean(e.person), { message: "Вкажіть, чия це подія", path: ["person"] });
+  .refine((e) => e.owner !== "other" || Boolean(e.person), { message: "Вкажіть, чия це подія", path: ["person"] })
+  .refine((e) => !e.end_date || e.end_date >= e.date, { message: "Кінцева дата не може бути раніше за початок", path: ["end_date"] })
+  .refine((e) => !(e.end_date && e.weekdays), { message: "Подія не може бути водночас регулярною і на кілька днів", path: ["end_date"] });
 export const calEventPatch = calEventFields.partial();
 export const calTodoInput = z.object({ title: z.string().trim().min(1, "Що треба зробити?") });
 

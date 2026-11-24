@@ -4,7 +4,17 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Prose } from "@/components/ui";
-import { buildAgenda, dayMonthLabel, repeatLabel, weekdayShort, type AgendaDay, type Occurrence } from "@/lib/calendar";
+import {
+  buildAgenda,
+  dayMonthLabel,
+  mapsUrl,
+  rangeLabel,
+  repeatLabel,
+  weekdayShort,
+  type AgendaDay,
+  type Occurrence,
+} from "@/lib/calendar";
+import { daysBetween } from "@/lib/dates";
 import { listEvents, listTodos } from "@/lib/data/calendar";
 import { todayKyiv } from "@/lib/dates";
 import type { CalTodo } from "@/lib/types";
@@ -65,6 +75,12 @@ async function Calendar() {
 
       <section className="cal-sec">
         <h2>Сьогодні</h2>
+        {agenda.ongoing.map((e) => (
+          <p key={e.id} className="cal-ongoing">
+            🧳 <b>{e.title}</b> · день {daysBetween(e.date, today) + 1} з {daysBetween(e.date, e.end_date!) + 1} ·{" "}
+            {e.end_date === today ? `останній день${e.end_time ? `, до ${e.end_time.slice(0, 5)}` : ""}` : `до ${dayMonthLabel(e.end_date!)}`}
+          </p>
+        ))}
         <Day day={agenda.today} today={today} emptyText="Вільний день ✨" live />
       </section>
 
@@ -185,6 +201,7 @@ function EventRow({ o, today }: { o: Occurrence; today: string }) {
             {e.person && <span className="cal-who">{e.person}</span>}
             {e.title}
             {e.weekdays && <span className="cal-rep" title="Повторюється">↻</span>}
+            {e.end_date && e.end_date !== e.date && <span className="cal-range">{rangeLabel(e.date, e.end_date)}</span>}
           </span>
           {extras && <span className="cal-extras">{extras}</span>}
         </summary>
@@ -195,7 +212,18 @@ function EventRow({ o, today }: { o: Occurrence; today: string }) {
               {e.repeat_until ? `, до ${dayMonthLabel(e.repeat_until)}` : ""}
             </p>
           )}
-          {e.place && <p>📍 {e.place}</p>}
+          {e.end_date && e.end_date !== e.date && (
+            <p className="cal-muted">
+              🗓 {dayMonthLabel(e.date)}
+              {e.time ? `, ${e.time.slice(0, 5)}` : ""} → {dayMonthLabel(e.end_date)}
+              {e.end_time ? `, ${e.end_time.slice(0, 5)}` : ""}
+            </p>
+          )}
+          {e.place && (
+            <a href={mapsUrl(e.place)} target="_blank" rel="noreferrer" className="cal-map">
+              📍 {e.place} <span>на мапі ↗</span>
+            </a>
+          )}
           {e.note && <Prose>{e.note}</Prose>}
           {e.url && (
             <a href={e.url} target="_blank" rel="noreferrer" className="cal-url">

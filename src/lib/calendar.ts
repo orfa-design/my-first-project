@@ -14,6 +14,8 @@ export type Agenda = {
   later: AgendaDay[];
   /** Минулі разові події, новіші вище. */
   past: AgendaDay[];
+  /** Події на кілька днів, що почалися раніше й ще тривають сьогодні. */
+  ongoing: CalEvent[];
 };
 
 /** День тижня: 1 — пн … 7 — нд. */
@@ -79,10 +81,12 @@ export function buildAgenda(events: CalEvent[], today: string): Agenda {
     tomorrow: { date: tomorrow, items: between(events, tomorrow, tomorrow).sort(byTime) },
     week: weekFrom <= sunday ? groupByDay(between(events, weekFrom, sunday)) : [],
     later: groupByDay(later),
+    // Подія на кілька днів минула, лише коли минув її останній день.
     past: groupByDay(
-      events.filter((e) => !e.weekdays && e.date < today).map((e) => ({ event: e, date: e.date })),
+      events.filter((e) => !e.weekdays && (e.end_date ?? e.date) < today).map((e) => ({ event: e, date: e.date })),
       true,
     ),
+    ongoing: events.filter((e) => !e.weekdays && e.end_date && e.date < today && e.end_date >= today),
   };
 }
 
@@ -101,3 +105,13 @@ export function repeatLabel(weekdays: number[]): string {
 const dayMonth = new Intl.DateTimeFormat("uk-UA", { day: "numeric", month: "long", timeZone: "UTC" });
 /** «21 листопада» */
 export const dayMonthLabel = (date: string) => dayMonth.format(new Date(`${date}T00:00:00Z`));
+
+/** «11–24 січня» або «28 грудня – 3 січня». */
+export function rangeLabel(from: string, to: string): string {
+  const [a, b] = [new Date(`${from}T00:00:00Z`), new Date(`${to}T00:00:00Z`)];
+  if (a.getUTCMonth() === b.getUTCMonth() && a.getUTCFullYear() === b.getUTCFullYear()) return `${a.getUTCDate()}–${dayMonthLabel(to)}`;
+  return `${dayMonthLabel(from)} – ${dayMonthLabel(to)}`;
+}
+
+/** Посилання на пошук місця в Google Картах (на телефоні відкриває застосунок). */
+export const mapsUrl = (place: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}`;
