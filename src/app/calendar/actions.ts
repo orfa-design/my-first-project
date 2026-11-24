@@ -39,6 +39,7 @@ export async function saveEventAction(id: string | null, _prev: FormState, formD
     // Година й хвилини — окремими списками; без години — подія на весь день.
     time: str(formData, "hour") ? `${str(formData, "hour")}:${str(formData, "minute") || "00"}` : "",
     place: str(formData, "place"),
+    place_no_map: formData.get("place_no_map") === "on",
     note: str(formData, "note"),
     url: str(formData, "url"),
     weekdays: repeats ? formData.getAll("weekdays").map(Number) : null,

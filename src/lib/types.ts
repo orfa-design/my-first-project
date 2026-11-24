@@ -146,6 +146,8 @@ export type CalEvent = {
   /** «19:30:00» або null — подія на весь день. */
   time: string | null;
   place: string | null;
+  /** Місце — не адреса: без посилання на карту. */
+  place_no_map: boolean;
   note: string | null;
   /** Сторінка події (квитки, афіша). */
   url: string | null;

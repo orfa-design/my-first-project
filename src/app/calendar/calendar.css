@@ -133,3 +133,4 @@
 .cal-ongoing b { font-weight: 600; }
 .cal-map { justify-self: start; color: var(--soft); text-decoration: none; }
 .cal-map span { margin-left: 4px; font-size: 12px; font-weight: 600; color: var(--accent); }
+.cal-check-small { margin-top: -6px; font-size: 13px; color: var(--soft); }

@@ -159,7 +159,7 @@ const HELP = `Study Hub CLI. Використання: npm run hub -- <кома�
   cal show                                Календар як на сторінці: today, tomorrow, week (до неділі), later, past
   cal list                                Усі події (з id)
   cal add '<json>'                        Поля: title, date (РРРР-ММ-ДД), time ("19:30"; без часу — весь день),
-                                          place, note, url (сторінка події), owner (mine|other), person (ім'я — для owner=other),
+                                          place, place_no_map (true — місце не адреса, без посилання на мапу), note, url (сторінка події), owner (mine|other), person (ім'я — для owner=other),
                                           weekdays ([1..7], 1 — пн; регулярна подія, date — з якого дня),
                                           repeat_until (до якої дати; без — безстроково),
                                           end_date, end_time (подія на кілька днів: до якої дати включно й до котрої)
